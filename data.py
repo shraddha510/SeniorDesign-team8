@@ -93,8 +93,8 @@ disaster_keywords = load_disaster_words()
 crisis_keywords = load_crisis_words()
 
 # File paths
-csv_filename = "bluesky_disaster_data.csv"
-json_filename = "bluesky_raw_data.json"
+csv_filename = "tweet_analysis_app/public/bluesky_disaster_data.csv"
+json_filename = "tweet_analysis_app/public/bluesky_raw_data.json"
 
 # Function to fetch Bluesky posts
 def fetch_bluesky_posts(keyword):
