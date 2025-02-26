@@ -1,12 +1,15 @@
 import requests
-import csv
+import pandas as pd
 import json
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from supabase import create_client
 from dotenv import load_dotenv
+from langdetect import detect
+import emoji
+import time
 
 # Temporary direct environment variable setting for testing
 os.environ["SUPABASE_URL"] = "https://opehiyxkmvneeggatqoj.supabase.co"
@@ -44,8 +47,8 @@ if not supabase_url or not supabase_key:
         f"{env_path}"
     )
 
-print(f"Loaded Supabase URL: {supabase_url[:8]}...") # Print first 8 chars for verification
-print(f"Loaded Supabase Key: {supabase_key[:8]}...") # Print first 8 chars for verification
+print(f"Loaded Supabase URL: {supabase_url[:8]}...") 
+print(f"Loaded Supabase Key: {supabase_key[:8]}...") 
 
 # Initialize Supabase client
 try:
@@ -55,12 +58,6 @@ except Exception as e:
     raise Exception(f"Failed to initialize Supabase client: {str(e)}")
 
 # Load NLP tools
-# Analyze Sentiment of the Post
-# pip install nltk vaderSentiment
-
-# Positive Sentiment → Score: 0.5 to 1.0
-# Neutral Sentiment → Score: -0.5 to 0.5
-# Negative Sentiment → Score: -1.0 to -0.5
 analyzer = SentimentIntensityAnalyzer()
 
 # Load External Disaster Keyword List
@@ -92,33 +89,67 @@ def load_crisis_words(filename="crisis_words.txt"):
 disaster_keywords = load_disaster_words()
 crisis_keywords = load_crisis_words()
 
-# File paths
-csv_filename = "tweet_analysis_app/public/bluesky_disaster_data.csv"
-json_filename = "tweet_analysis_app/public/bluesky_raw_data.json"
+# Directories for CSV and JSON 
+csv_directory = "tweet_analysis_app/public/csv"
+json_directory = "tweet_analysis_app/public/json"
+
+# Generate filenames with MM-DD-YYYY format
+current_date = datetime.now().strftime("%m-%d-%Y")
+csv_filename = os.path.join(csv_directory, f"bluesky_disaster_data_{current_date}.csv")
+json_filename = os.path.join(json_directory, f"bluesky_raw_data_{current_date}.json")
+
+# Calculate 24-hour time window
+cutoff_time = datetime.utcnow() - timedelta(days=1)
+
+# Function to clean tweet text
+def clean_text(text):
+    try:
+        # Check if the text is in English
+        if detect(text) != 'en':
+            return None
+        
+        # Convert emojis to text
+        text = emoji.demojize(text, delimiters=("", " "))
+        
+        # Remove URLs, mentions, and special characters
+        text = re.sub(r"http\S+|www\S+|https\S+", '', text, flags=re.MULTILINE)  # URLs
+        text = re.sub(r'@\w+', '', text)  # Mentions
+        text = re.sub(r'#\w+', '', text)  # Hashtags
+        text = re.sub(r'[^\w\s]', '', text)  # Special characters
+        
+        # Standardize text: Lowercase, strip whitespace
+        text = text.lower().strip()
+        
+        return text if text else None
+    except Exception as e:
+        print(f"Error cleaning text: {e}")
+        return None
 
 # Function to fetch Bluesky posts
 def fetch_bluesky_posts(keyword):
-    url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts?q={keyword}"
+    url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.searchposts?q={keyword}"
     
     try:
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
 
-        # Extract relevant fields
         posts = data.get("posts", [])
         results = []
         
         for post in posts:
-            author = post.get("author", {}).get("handle", "Unknown")  # Author handle
-            text = post.get("record", {}).get("text", "No content").lower()  # Convert to lowercase
-            raw_timestamp = post.get("indexedAt", "Unknown")  # Original timestamp
+            author = post.get("author", {}).get("handle", "Unknown")
+            text = post.get("record", {}).get("text", "No content").lower()
+            raw_timestamp = post.get("indexedAt", "Unknown")
             
-            # Convert timestamp format
+            # Convert and filter by timestamp (last 24 hours)
             try:
-                formatted_timestamp = datetime.strptime(raw_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d %H:%M:%S")
+                post_timestamp = datetime.strptime(raw_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
+                if post_timestamp < cutoff_time:
+                    continue  # Skip posts older than 24 hours
+                formatted_timestamp = post_timestamp.strftime("%Y-%m-%d %H:%M:%S")
             except ValueError:
-                formatted_timestamp = raw_timestamp  # If conversion fails, keep original
+                formatted_timestamp = raw_timestamp
             
             hashtags = " ".join([word for word in text.split() if word.startswith("#")])
             
@@ -131,15 +162,14 @@ def fetch_bluesky_posts(keyword):
             # Extract sentiment score
             sentiment_score = analyzer.polarity_scores(text)["compound"]
 
-            # Find matches in disaster and crisis keyword lists
+            # Match keywords
             matched_disaster_words = [word for word in disaster_keywords if word in text]
             matched_crisis_words = [word for word in crisis_keywords if word in text]
 
-            # Exclude tweets that don't match any keywords
+            # Exclude tweets with no matched keywords
             if not matched_disaster_words and not matched_crisis_words:
-                continue  # Skip tweet if it doesn't match any keywords
+                continue
 
-            # Store filtered data
             results.append({
                 "tweet_id": tweet_id,
                 "timestamp": formatted_timestamp,
@@ -154,51 +184,38 @@ def fetch_bluesky_posts(keyword):
         return results
 
     except requests.exceptions.RequestException as e:
-        print("Error fetching data:", e)
+        print(f"Error fetching data: {e}")
         return []
 
-# Function to save data to CSV
-def save_to_csv(data):
+# Function to save data to CSV and JSON
+def save_data(data):
     if not data:
+        print("No data to save.")
         return
     
-    file_exists = os.path.exists(csv_filename)
+    df = pd.DataFrame(data)
 
-    with open(csv_filename, mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=[
-            "tweet_id", "timestamp", "tweet_text", "matched_disaster_keywords",
-            "matched_crisis_keywords", "hashtags", "post_url", "sentiment_score"
-        ])
-        
-        # Write header only if file does not exist
-        if not file_exists:
-            writer.writeheader()
-        
-        writer.writerows(data)
+    # Apply cleaning only for CSV, not JSON
+    df['tweet_text'] = df['tweet_text'].apply(clean_text)
+
+    # Drop rows with None (invalid or non-English data)
+    df = df.dropna(subset=['tweet_text'])
     
-    print(f"Data appended to {csv_filename}")
-
-# Function to save data to JSON
-def save_to_json(data):
-    if not data:
-        return
-
-    if os.path.exists(json_filename):
-        with open(json_filename, "r+", encoding="utf-8") as json_file:
-            try:
-                existing_data = json.load(json_file)
-                existing_data.extend(data)
-                json_file.seek(0)
-                json.dump(existing_data, json_file, indent=4)
-            except json.JSONDecodeError:
-                json.dump(data, json_file, indent=4)
+    if os.path.exists(csv_filename):
+        df.to_csv(csv_filename, mode='a', index=False, header=False)
     else:
-        with open(json_filename, "w", encoding="utf-8") as json_file:
-            json.dump(data, json_file, indent=4)
+        df.to_csv(csv_filename, mode='w', index=False)
 
-    print(f"Data appended to {json_filename}")
+    # Save to CSV
+    df.to_csv(csv_filename, mode='w', index=False)
+    print(f"Data saved to CSV: {csv_filename}")
+    
+    # Save to JSON (raw data, no cleaning)
+    with open(json_filename, "w", encoding="utf-8") as json_file:
+        json.dump(data, json_file, indent=4)
+    print(f"Data saved to JSON: {json_filename}")
 
-# Add new function to save data to Supabase
+# Save data to Supabase
 def save_to_supabase(data):
     if not data:
         return
@@ -240,9 +257,10 @@ if __name__ == "__main__":
         else:
             print(f"No results found for '{keyword}', skipping...")
 
+        time.sleep(1)
+
     if all_data:
-        save_to_csv(all_data)
-        save_to_json(all_data)
+        save_data(all_data)
         save_to_supabase(all_data)
     else:
         print("No disaster-related posts were found.")
