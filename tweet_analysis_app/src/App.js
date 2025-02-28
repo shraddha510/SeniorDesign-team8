@@ -1,43 +1,34 @@
-import React from "react";
-import { useEffect, useState } from "react";
-import Papa from "papaparse";
-
+import React, {useEffect, useState} from 'react';
+import Papa from 'papaparse';
+import Navbar from './components/Navbar';
+import Home from './components/Home';
+import './styles/App.css';
+import TweetTable from "./components/TweetTable";
 
 const App = () => {
-  const [csvData, setCsvData] = useState([]);
-  const [jsonData, setJsonData] = useState([]);
+    const [csvData, setCsvData] = useState([]);
 
-  useEffect(() => {
-    // Load CSV or TSV File
-    fetch("/bluesky_disaster_data.csv") // Change to '/data.tsv' if needed
-      .then(response => response.text())
-      .then(text => {
-        Papa.parse(text, {
-          header: true, // Reads first row as keys
-          delimiter: ",", // Change to '\t' for TSV
-          complete: (result) => {
-            setCsvData(result.data);
-          },
-        });
-      });
+    useEffect(() => {
+        fetch('/bluesky_disaster_data.csv')
+            .then(response => response.text())
+            .then(text => {
+                Papa.parse(text, {
+                    header: true,
+                    delimiter: ',',
+                    complete: (result) => {
+                        setCsvData(result.data);
+                    },
+                });
+            });
+    }, []);
 
-    // Load JSON File
-    fetch("/bluesky_raw_data.json")
-      .then(response => response.json())
-      .then(data => setJsonData(data));
-  }, []);
-
-  return (
-    <div style={{ padding: "20px" }}>
-      <h1>Data Viewer</h1>
-
-      <h2>CSV/TSV Data:</h2>
-      <pre>{JSON.stringify(csvData, null, 2)}</pre>
-
-      <h2>JSON Data:</h2>
-      <pre>{JSON.stringify(jsonData, null, 2)}</pre>
-    </div>
-  );
+    return (
+        <div className="app-container">
+            <Navbar/>
+            <Home/>
+            <TweetTable filePath="/json/bluesky_raw_data_02-26-2025.json"/>
+        </div>
+    );
 };
 
 export default App;

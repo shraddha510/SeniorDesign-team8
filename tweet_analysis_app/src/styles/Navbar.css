@@ -1,0 +1,34 @@
+.navbar {
+    position: fixed;
+    align-items: center;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: #002b47;
+    height: 56px; /* Set a fixed height for the navbar */
+}
+
+.navbar ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #002b47;
+}
+
+.navbar li {
+    float: right;
+}
+
+.navbar li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 20px 16px;
+    text-decoration: none;
+}
+
+.navbar li a:hover {
+    opacity: 0.5;
+    transition: 0.5s;
+}

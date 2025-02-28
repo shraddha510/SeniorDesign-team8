@@ -1,19 +1,21 @@
-import requests
-import pandas as pd
 import json
 import os
 import re
+import time
 from datetime import datetime, timedelta
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from supabase import create_client
+
+import emoji
+import pandas as pd
+import requests
 from dotenv import load_dotenv
 from langdetect import detect
-import emoji
-import time
+from supabase import create_client
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 # Temporary direct environment variable setting for testing
 os.environ["SUPABASE_URL"] = "https://opehiyxkmvneeggatqoj.supabase.co"
-os.environ["SUPABASE_KEY"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZWhpeXhrbXZuZWVnZ2F0cW9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2NzQyNjMsImV4cCI6MjA1NTI1MDI2M30.MszUsOz_eOOEE0Ldg-6_uh3zPmZoF32t5JHK1a9WhiA"
+os.environ[
+    "SUPABASE_KEY"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZWhpeXhrbXZuZWVnZ2F0cW9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2NzQyNjMsImV4cCI6MjA1NTI1MDI2M30.MszUsOz_eOOEE0Ldg-6_uh3zPmZoF32t5JHK1a9WhiA"
 
 # Load environment variables with explicit path - point to the correct .env file
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -47,8 +49,8 @@ if not supabase_url or not supabase_key:
         f"{env_path}"
     )
 
-print(f"Loaded Supabase URL: {supabase_url[:8]}...") 
-print(f"Loaded Supabase Key: {supabase_key[:8]}...") 
+print(f"Loaded Supabase URL: {supabase_url[:8]}...")
+print(f"Loaded Supabase Key: {supabase_key[:8]}...")
 
 # Initialize Supabase client
 try:
@@ -59,6 +61,7 @@ except Exception as e:
 
 # Load NLP tools
 analyzer = SentimentIntensityAnalyzer()
+
 
 # Load External Disaster Keyword List
 def load_disaster_words(filename="disaster_words.txt"):
@@ -73,7 +76,8 @@ def load_disaster_words(filename="disaster_words.txt"):
         print(f"Disaster word list file not found at {file_path}! Using crisis keywords only.")
         return []
 
-# Load External Crisis Word List 
+
+# Load External Crisis Word List
 def load_crisis_words(filename="crisis_words.txt"):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, filename)
@@ -85,6 +89,7 @@ def load_crisis_words(filename="crisis_words.txt"):
     except FileNotFoundError:
         print(f"Crisis word list file not found at {file_path}! Using disaster keywords only.")
         return []
+
 
 disaster_keywords = load_disaster_words()
 crisis_keywords = load_crisis_words()
@@ -101,34 +106,36 @@ json_filename = os.path.join(json_directory, f"bluesky_raw_data_{current_date}.j
 # Calculate 24-hour time window
 cutoff_time = datetime.utcnow() - timedelta(days=1)
 
+
 # Function to clean tweet text
 def clean_text(text):
     try:
         # Check if the text is in English
         if detect(text) != 'en':
             return None
-        
+
         # Convert emojis to text
         text = emoji.demojize(text, delimiters=("", " "))
-        
+
         # Remove URLs, mentions, and special characters
         text = re.sub(r"http\S+|www\S+|https\S+", '', text, flags=re.MULTILINE)  # URLs
         text = re.sub(r'@\w+', '', text)  # Mentions
         text = re.sub(r'#\w+', '', text)  # Hashtags
         text = re.sub(r'[^\w\s]', '', text)  # Special characters
-        
+
         # Standardize text: Lowercase, strip whitespace
         text = text.lower().strip()
-        
+
         return text if text else None
     except Exception as e:
         print(f"Error cleaning text: {e}")
         return None
 
+
 # Function to fetch Bluesky posts
 def fetch_bluesky_posts(keyword):
     url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.searchposts?q={keyword}"
-    
+
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -136,12 +143,12 @@ def fetch_bluesky_posts(keyword):
 
         posts = data.get("posts", [])
         results = []
-        
+
         for post in posts:
             author = post.get("author", {}).get("handle", "Unknown")
             text = post.get("record", {}).get("text", "No content").lower()
             raw_timestamp = post.get("indexedAt", "Unknown")
-            
+
             # Convert and filter by timestamp (last 24 hours)
             try:
                 post_timestamp = datetime.strptime(raw_timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -150,13 +157,13 @@ def fetch_bluesky_posts(keyword):
                 formatted_timestamp = post_timestamp.strftime("%Y-%m-%d %H:%M:%S")
             except ValueError:
                 formatted_timestamp = raw_timestamp
-            
+
             hashtags = " ".join([word for word in text.split() if word.startswith("#")])
-            
+
             # Extract tweet ID
             post_uri = post.get("uri", "")
-            tweet_id = re.sub(r'\D', '', post_uri)[-20:] 
-            
+            tweet_id = re.sub(r'\D', '', post_uri)[-20:]
+
             post_url = f"https://bsky.app/profile/{author}/post/{post_uri.split('/')[-1]}"
 
             # Extract sentiment score
@@ -180,19 +187,20 @@ def fetch_bluesky_posts(keyword):
                 "post_url": post_url,
                 "sentiment_score": sentiment_score
             })
-        
+
         return results
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data: {e}")
         return []
 
+
 # Function to save data to CSV and JSON
 def save_data(data):
     if not data:
         print("No data to save.")
         return
-    
+
     df = pd.DataFrame(data)
 
     # Apply cleaning only for CSV, not JSON
@@ -200,7 +208,7 @@ def save_data(data):
 
     # Drop rows with None (invalid or non-English data)
     df = df.dropna(subset=['tweet_text'])
-    
+
     if os.path.exists(csv_filename):
         df.to_csv(csv_filename, mode='a', index=False, header=False)
     else:
@@ -209,17 +217,18 @@ def save_data(data):
     # Save to CSV
     df.to_csv(csv_filename, mode='w', index=False)
     print(f"Data saved to CSV: {csv_filename}")
-    
+
     # Save to JSON (raw data, no cleaning)
     with open(json_filename, "w", encoding="utf-8") as json_file:
         json.dump(data, json_file, indent=4)
     print(f"Data saved to JSON: {json_filename}")
 
+
 # Save data to Supabase
 def save_to_supabase(data):
     if not data:
         return
-    
+
     try:
         # Format the data to match the table structure
         formatted_data = []
@@ -243,6 +252,7 @@ def save_to_supabase(data):
     except Exception as e:
         print(f"Error storing data in Supabase: {e}")
         return None
+
 
 # Main execution
 if __name__ == "__main__":

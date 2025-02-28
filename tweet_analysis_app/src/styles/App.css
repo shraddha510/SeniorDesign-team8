@@ -1,0 +1,11 @@
+html, body {
+    overscroll-behavior-y: none;
+    background-color: #f7f1e9;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 56px;
+    overflow-y: auto;
+}
