@@ -2,6 +2,7 @@ import json
 import os
 import re
 import time
+import base64
 from datetime import datetime, timedelta
 
 import emoji
@@ -95,8 +96,13 @@ disaster_keywords = load_disaster_words()
 crisis_keywords = load_crisis_words()
 
 # Directories for CSV and JSON 
-csv_directory = "tweet_analysis_app/public/csv"
-json_directory = "tweet_analysis_app/public/json"
+csv_directory = os.path.join(current_dir, "tweet_analysis_app", "public", "csv")
+json_directory = os.path.join(current_dir, "tweet_analysis_app", "public", "json")
+images_directory = os.path.join(current_dir, "tweet_analysis_app", "public", "images")
+
+# Ensure directories exist
+for directory in [csv_directory, json_directory, images_directory]:
+    os.makedirs(directory, exist_ok=True)
 
 # Generate filenames with MM-DD-YYYY format
 current_date = datetime.now().strftime("%m-%d-%Y")
@@ -105,6 +111,35 @@ json_filename = os.path.join(json_directory, f"bluesky_raw_data_{current_date}.j
 
 # Calculate 24-hour time window
 cutoff_time = datetime.utcnow() - timedelta(days=1)
+
+# Data directories dictionary for easy reference
+data_dirs = {
+    'csv': csv_directory,
+    'json': json_directory,
+    'images': images_directory
+}
+
+# Function to download and save an image
+def download_image(img_url, img_path):
+    try:
+        response = requests.get(img_url, stream=True)
+        response.raise_for_status()
+        
+        # Save the image to disk
+        with open(img_path, 'wb') as img_file:
+            for chunk in response.iter_content(chunk_size=8192):
+                img_file.write(chunk)
+        
+        # Create a base64 representation for embedding in JSON/database
+        with open(img_path, 'rb') as img_file:
+            img_data = img_file.read()
+            base64_data = base64.b64encode(img_data).decode('utf-8')
+            
+        print(f"Successfully downloaded image to {img_path}")
+        return base64_data
+    except Exception as e:
+        print(f"Error downloading image: {e}")
+        return None
 
 
 # Function to clean tweet text
@@ -134,8 +169,8 @@ def clean_text(text):
 
 # Function to fetch Bluesky posts
 def fetch_bluesky_posts(keyword):
-    url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.searchposts?q={keyword}"
-
+    url = f"https://api.bsky.app/xrpc/app.bsky.feed.searchposts?q={keyword}"
+    
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -143,11 +178,74 @@ def fetch_bluesky_posts(keyword):
 
         posts = data.get("posts", [])
         results = []
-
+        
         for post in posts:
             author = post.get("author", {}).get("handle", "Unknown")
             text = post.get("record", {}).get("text", "No content").lower()
             raw_timestamp = post.get("indexedAt", "Unknown")
+            
+            # Extract images if they exist - improved image extraction
+            images = []
+            record = post.get("record", {})
+            embed = record.get("embed", {})
+            
+            # Handle different embed types
+            if isinstance(embed, dict):
+                # Handle $type: app.bsky.embed.images
+                if embed.get("$type") == "app.bsky.embed.images":
+                    for img in embed.get("images", []):
+                        if img.get("image", {}).get("ref"):
+                            img_url = f"https://bsky.social/xrpc/com.atproto.sync.getBlob?did={post.get('author', {}).get('did')}&cid={img['image']['ref']['$link']}"
+                            tweet_id = re.sub(r'\D', '', post.get("uri", ""))[-20:]
+                            img_filename = f"{tweet_id}_{len(images)}.jpg"
+                            img_path = os.path.join(data_dirs['images'], img_filename)
+                            
+                            img_base64 = download_image(img_url, img_path)
+                            if img_base64:
+                                images.append({
+                                    "url": img_url,
+                                    "local_path": f"/images/{img_filename}",
+                                    "base64": img_base64,
+                                    "alt": img.get("alt", "")
+                                })
+                
+                # Handle embedded external images
+                elif embed.get("$type") == "app.bsky.embed.external":
+                    external = embed.get("external", {})
+                    if external.get("thumb"):
+                        img_url = external.get("thumb")
+                        tweet_id = re.sub(r'\D', '', post.get("uri", ""))[-20:]
+                        img_filename = f"{tweet_id}_external.jpg"
+                        img_path = os.path.join(data_dirs['images'], img_filename)
+                        
+                        img_base64 = download_image(img_url, img_path)
+                        if img_base64:
+                            images.append({
+                                "url": img_url,
+                                "local_path": f"/images/{img_filename}",
+                                "base64": img_base64,
+                                "alt": external.get("title", "")
+                            })
+                
+                # Handle embedded posts with images
+                elif embed.get("$type") == "app.bsky.embed.record":
+                    record_embed = embed.get("record", {}).get("embed", {})
+                    if isinstance(record_embed, dict) and record_embed.get("$type") == "app.bsky.embed.images":
+                        for img in record_embed.get("images", []):
+                            if img.get("image", {}).get("ref"):
+                                img_url = f"https://bsky.social/xrpc/com.atproto.sync.getBlob?did={post.get('author', {}).get('did')}&cid={img['image']['ref']['$link']}"
+                                tweet_id = re.sub(r'\D', '', post.get("uri", ""))[-20:]
+                                img_filename = f"{tweet_id}_{len(images)}_embed.jpg"
+                                img_path = os.path.join(data_dirs['images'], img_filename)
+                                
+                                img_base64 = download_image(img_url, img_path)
+                                if img_base64:
+                                    images.append({
+                                        "url": img_url,
+                                        "local_path": f"/images/{img_filename}",
+                                        "base64": img_base64,
+                                        "alt": img.get("alt", "")
+                                    })
 
             # Convert and filter by timestamp (last 24 hours)
             try:
@@ -177,6 +275,15 @@ def fetch_bluesky_posts(keyword):
             if not matched_disaster_words and not matched_crisis_words:
                 continue
 
+            # Create a simplified image data structure for storage
+            image_data = []
+            for img in images:
+                image_data.append({
+                    "url": img["url"],
+                    "local_path": img["local_path"],
+                    "alt": img["alt"]
+                })
+
             results.append({
                 "tweet_id": tweet_id,
                 "timestamp": formatted_timestamp,
@@ -185,7 +292,8 @@ def fetch_bluesky_posts(keyword):
                 "matched_crisis_keywords": ", ".join(matched_crisis_words) if matched_crisis_words else "None",
                 "hashtags": hashtags,
                 "post_url": post_url,
-                "sentiment_score": sentiment_score
+                "sentiment_score": sentiment_score,
+                "images": image_data
             })
 
         return results
@@ -202,6 +310,10 @@ def save_data(data):
         return
 
     df = pd.DataFrame(data)
+    
+    # Convert images list to string representation for CSV
+    if 'images' in df.columns:
+        df['images'] = df['images'].apply(lambda x: json.dumps(x) if x else "[]")
 
     # Apply cleaning only for CSV, not JSON
     df['tweet_text'] = df['tweet_text'].apply(clean_text)
@@ -241,7 +353,8 @@ def save_to_supabase(data):
                 'matched_crisis_keywords': item['matched_crisis_keywords'],
                 'hashtags': item['hashtags'],
                 'post_url': item['post_url'],
-                'sentiment_score': float(item['sentiment_score'])  # Ensure this is a float
+                'sentiment_score': float(item['sentiment_score']),  # Ensure this is a float
+                'images': item.get('images', [])  # Add images field
             }
             formatted_data.append(formatted_item)
 
