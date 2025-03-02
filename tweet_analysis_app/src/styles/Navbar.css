@@ -1,6 +1,5 @@
 .navbar {
     position: fixed;
-    align-items: center;
     top: 0;
     width: 100%;
     z-index: 1000;
@@ -8,12 +7,27 @@
     height: 56px; /* Set a fixed height for the navbar */
 }
 
+.navbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 0 20px;
+}
+
+.navbar-title h1 {
+    color: white;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
 .navbar ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #002b47;
+    display: flex;
 }
 
 .navbar li {
@@ -24,8 +38,10 @@
     display: block;
     color: white;
     text-align: center;
-    padding: 20px 16px;
+    padding: 0 16px;
     text-decoration: none;
+    height: 56px;
+    line-height: 56px;
 }
 
 .navbar li a:hover {

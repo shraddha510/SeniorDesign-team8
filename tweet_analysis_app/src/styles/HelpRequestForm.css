@@ -1,0 +1,115 @@
+.help-request-form-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.help-request-form-container h1 {
+  color: #16456b;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.help-request-form-container p {
+  color: #555;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.help-request-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group:nth-last-child(2) {
+  grid-column: span 2;
+}
+
+.form-actions {
+  grid-column: span 2;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+input, select, textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #16456b;
+  box-shadow: 0 0 0 2px rgba(22, 69, 107, 0.2);
+}
+
+.submit-button, .cancel-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-button {
+  background-color: #16456b;
+  color: white;
+}
+
+.submit-button:hover {
+  background-color: #0d2b45;
+}
+
+.cancel-button {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.cancel-button:hover {
+  background-color: #d0d0d0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .help-request-form-container {
+    padding: 20px;
+    margin: 20px;
+  }
+  
+  .help-request-form {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group:nth-last-child(2) {
+    grid-column: span 1;
+  }
+  
+  .form-actions {
+    grid-column: span 1;
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  
+  .submit-button, .cancel-button {
+    width: 100%;
+  }
+} 

@@ -1,6 +1,5 @@
 .home-container {
     text-align: center;
-    marin-top: 28px;
 }
 
 .image-container {
@@ -11,14 +10,5 @@
 .home-image {
     width: 100%;
     height: auto;
-}
-
-.image-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 2em;
-    text-shadow: 2px 2px 4px #000;
+    display: block;
 }

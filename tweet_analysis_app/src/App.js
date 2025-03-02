@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Papa from 'papaparse';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import './styles/App.css';
 import TweetTable from "./components/TweetTable";
+import HelpRequestForm from './components/HelpRequestForm';
 
 const App = () => {
     const [csvData, setCsvData] = useState([]);
@@ -23,11 +25,20 @@ const App = () => {
     }, []);
 
     return (
-        <div className="app-container">
-            <Navbar/>
-            <Home/>
-            <TweetTable filePath="/json/bluesky_raw_data_02-26-2025.json"/>
-        </div>
+        <Router>
+            <div className="app-container">
+                <Navbar/>
+                <Routes>
+                    <Route path="/" element={
+                        <>
+                            <Home/>
+                            <TweetTable filePath="/json/bluesky_raw_data_02-26-2025.json"/>
+                        </>
+                    } />
+                    <Route path="/help-request" element={<HelpRequestForm />} />
+                </Routes>
+            </div>
+        </Router>
     );
 };
 
