@@ -1,0 +1,71 @@
+.table-container {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  max-width: 1800px; 
+  margin: 50px auto; 
+  width: 90%; 
+}
+
+.tweets-table {
+  width: 100%; 
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 18px; 
+}
+  
+.table-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #222;
+}
+
+.table-subtitle {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 15px;
+  margin-top: -2px;
+}
+
+.tweets-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.tweets-table td {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tweets-table .rank {
+  font-weight: bold;
+  color: blue;
+}
+
+.tweets-table .severity-tag {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.severity-tag.high {
+  background: #ffdddd;
+  color: red;
+}
+
+.severity-tag.moderate {
+  background: #fff5cc;
+  color: #b58900;
+}
+
+.severity-tag.low {
+  background: #ddffdd;
+  color: green;
+}
