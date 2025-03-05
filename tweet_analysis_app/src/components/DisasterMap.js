@@ -1,5 +1,6 @@
+import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const getSeverityColor = (severity) => {
@@ -13,6 +14,36 @@ const getSeverityColor = (severity) => {
         default:
             return 'blue';
     }
+};
+
+const createMarkerIcon = (color) => {
+    return L.divIcon({
+        className: 'custom-marker',
+        html: `
+            <div style="
+                width: 30px; 
+                height: 30px; 
+                border-radius: 50% 50% 50% 0;
+                background: ${color};
+                position: absolute;
+                transform: rotate(-45deg);
+                left: 50%;
+                top: 50%;
+                margin: -15px 0 0 -15px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            ">
+                <div style="
+                    transform: rotate(45deg);
+                    color: white;
+                    text-align: center;
+                    line-height: 30px;
+                "></div>
+            </div>
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30]
+    });
 };
 
 const DisasterMap = () => {
@@ -41,6 +72,22 @@ const DisasterMap = () => {
             severity: "Moderate",
             score: 7
         },
+        {
+            name: "San Francisco, CA",
+            latitude: 37.7749,
+            longitude: -122.4194,
+            disasterType: "Earthquake Watch",
+            severity: "Low",
+            score: 4
+        },
+        {
+            name: "Charleston, SC",
+            latitude: 32.7765,
+            longitude: -79.9311,
+            disasterType: "Hurricane Flooding",
+            severity: "Moderate",
+            score: 6
+        }
     ];
 
     return (
@@ -50,19 +97,12 @@ const DisasterMap = () => {
             />
             {disasterData.map((disaster, index) => {
                 const markerColor = getSeverityColor(disaster.severity);
-                const customIcon = new Icon({
-                    iconUrl: `https://www.mapbox.com/mapbox-gl-js/assets/icons/marker-icon-${markerColor}.png`,
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41],
-                    popupAnchor: [1, -34],
-                    tooltipAnchor: [16, -28],
-                });
 
                 return (
                     <Marker
                         key={index}
                         position={[disaster.latitude, disaster.longitude]}
-                        icon={customIcon}
+                        icon={createMarkerIcon(markerColor)}
                     >
                         <Popup>
                             <strong>{disaster.name}</strong><br />
