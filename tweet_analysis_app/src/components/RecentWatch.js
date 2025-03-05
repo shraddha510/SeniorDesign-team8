@@ -30,8 +30,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">Athena Gabriel</div>
+                                    <div className="username">@athenagabriel.bsky.social</div>
                                 </div>
                             </div>
                             <img
@@ -54,8 +54,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">Hydrau</div>
+                                    <div className="username">@hydrau.bsky.social‬</div>
                                 </div>
                             </div>
                             <img
@@ -77,8 +77,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">Jeff</div>
+                                    <div className="username">@jammaj.bsky.social</div>
                                 </div>
                             </div>
                             <img
@@ -103,8 +103,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">Misty Heggeness</div>
+                                    <div className="username">@mlheggeness.bsky.social‬</div>
                                 </div>
                             </div>
                             <img
@@ -127,8 +127,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">Democracy North Carolina</div>
+                                    <div className="username">@democracync.bsky.social‬</div>
                                 </div>
                             </div>
                             <img
@@ -151,8 +151,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">Cleophus Velaryon</div>
+                                    <div className="username">@heydrwilson.bsky.social‬</div>
                                 </div>
                             </div>
                             <img
@@ -177,8 +177,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">chikianimation-com.bsky.social</div>
+                                    <div className="username">@chikianimation-com.bsky.social‬</div>
                                 </div>
                             </div>
                             <img
@@ -201,8 +201,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">3 Sides🟥🍁🟥</div>
+                                    <div className="username">@3sides.bsky.social‬</div>
                                 </div>
                             </div>
                             <img
@@ -225,8 +225,8 @@ export const RecentWatch = ({className}) => {
                                 {/*        alt={"profile-picture"}/>*/}
                                 {/*</div>*/}
                                 <div className="poster-info">
-                                    <div className="poster-name">Person Name</div>
-                                    <div className="username">@username</div>
+                                    <div className="poster-name">Roko’s other Basilisk</div>
+                                    <div className="username">@kanathema.bsky.social‬</div>
                                 </div>
                             </div>
                             <img

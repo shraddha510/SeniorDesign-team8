@@ -1,8 +1,3 @@
-.recent-watch,
-.recent-watch * {
-    box-sizing: border-box;
-}
-
 .recent-watch {
     background: #003d80;
     border-radius: 50px;
@@ -12,32 +7,23 @@
     gap: 10px;
     align-items: center;
     justify-content: flex-start;
-    height: 1184px;
     position: relative;
 }
 
-.recent-watch .header {
-    padding: 0;
+.header {
     display: flex;
     flex-direction: column;
-    gap: 1px;
     align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    max-width: 700px;
-    position: relative;
 }
 
-.recent-watch .title {
+.title {
     color: #ffffff;
-    text-align: left;
     /*font-family: "Inter-Bold", sans-serif;*/
     font-size: 48px;
     font-weight: 700;
-    position: relative;
 }
 
-.recent-watch .description {
+.description {
     color: #ffffff;
     text-align: center;
     /*font-family: "Inter-Medium", sans-serif;*/
@@ -50,7 +36,7 @@
     justify-content: center;
 }
 
-.recent-watch .tweet-button {
+.tweet-button {
     display: inline-block;
     background-color: #1DA1F2;
     color: white;
@@ -64,11 +50,11 @@
 
 }
 
-.recent-watch .tweet-button:hover {
+.tweet-button:hover {
     background: #007bff;
 }
 
-.recent-watch .post-button-text {
+.post-button-text {
     color: #ffffff;
     text-align: center;
     /*font-family: "PlusJakartaSans-Medium", sans-serif;*/
@@ -81,7 +67,7 @@
     justify-content: center;
 }
 
-.recent-watch .tweet-examples {
+.tweet-examples {
     padding: 24px 0 24px 0;
     display: flex;
     flex-direction: row;
@@ -93,7 +79,7 @@
     overflow: hidden;
 }
 
-.recent-watch .tweet-columns {
+.tweet-columns {
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -105,7 +91,7 @@
     overflow: hidden;
 }
 
-/*.recent-watch .tweet-columns:hover {*/
+/*.tweet-columns:hover {*/
 /*    content: "";*/
 /*    position: absolute;*/
 /*    top: 0;*/
@@ -118,7 +104,7 @@
 /*}*/
 
 
-.recent-watch .tweet-card {
+.tweet-card {
     background: #ffffff;
     border-radius: 32px;
     padding: 24px;
@@ -132,20 +118,20 @@
     position: relative;
 }
 
-.recent-watch .tweet-header-container {
+.tweet-header-container {
     display: flex;
     justify-content: space-between;
     width: 100%;
 }
 
-.recent-watch .poster-info-container {
+.poster-info-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
 }
 
-.recent-watch .profile-picture {
+.profile-picture {
     border-radius: 48px;
     display: flex;
     flex-direction: row;
@@ -157,21 +143,21 @@
     overflow: hidden;
 }
 
-.recent-watch .image-test {
+.image-test {
     border-radius: 48px;
     flex: 1;
     position: relative;
     object-fit: cover;
 }
 
-.recent-watch .poster-info {
+.poster-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
     flex-shrink: 0;
 }
 
-.recent-watch .poster-name {
+.poster-name {
     color: #222222;
     text-align: left;
     /*font-family: "Inter-SemiBold", sans-serif;*/
@@ -184,7 +170,7 @@
     justify-content: flex-start;
 }
 
-.recent-watch .username {
+.username {
     color: #808a99;
     text-align: left;
     /*font-family: "Inter-Medium", sans-serif;*/
@@ -197,12 +183,12 @@
     justify-content: flex-start;
 }
 
-.recent-watch .bluesky-logo {
+.bluesky-logo {
     width: auto;
     height: 22px;
 }
 
-.recent-watch .tweet-caption {
+.tweet-caption {
     text-align: left;
     /*font-family: "Inter-Medium", sans-serif;*/
     font-size: 16px;
