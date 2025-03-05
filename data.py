@@ -13,9 +13,10 @@ from langdetect import detect
 from supabase import create_client
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Load NLP tools
 analyzer = SentimentIntensityAnalyzer()
-
 
 # Load External Disaster Keyword List
 def load_disaster_words(filename="disaster_words.txt"):
