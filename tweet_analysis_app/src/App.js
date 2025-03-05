@@ -35,7 +35,7 @@ const App = () => {
                         <>
                             <Home />
                             <TweetTable filePath="/json/bluesky_raw_data_02-26-2025.json" />
-                            <DisasterMap /> { }
+                            <DisasterMap />
 
                         </>
                     } />

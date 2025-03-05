@@ -91,7 +91,7 @@ const DisasterMap = () => {
     ];
 
     return (
-        <MapContainer center={[37.7749, -122.4194]} zoom={5} style={{ height: "500px", width: "100%" }}>
+        <MapContainer center={[37.7749, -122.4194]} zoom={5} style={{ height: "850px", width: "100%" }}>
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
