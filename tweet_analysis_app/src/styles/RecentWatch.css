@@ -1,0 +1,228 @@
+.recent-watch,
+.recent-watch * {
+    box-sizing: border-box;
+}
+
+.recent-watch {
+    background: #003d80;
+    border-radius: 50px;
+    padding: 56px 90px 56px 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+    height: 1184px;
+    position: relative;
+}
+
+.recent-watch .header {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    max-width: 700px;
+    position: relative;
+}
+
+.recent-watch .title {
+    color: #ffffff;
+    text-align: left;
+    /*font-family: "Inter-Bold", sans-serif;*/
+    font-size: 48px;
+    font-weight: 700;
+    position: relative;
+}
+
+.recent-watch .description {
+    color: #ffffff;
+    text-align: center;
+    /*font-family: "Inter-Medium", sans-serif;*/
+    font-size: 24px;
+    line-height: 36px;
+    font-weight: 500;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recent-watch .tweet-button {
+    background: #1da1f2;
+    border-radius: 8px;
+    padding: 11px;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.recent-watch .bsky-app-logo-color-instance {
+    flex-shrink: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.recent-watch .post-button-text {
+    color: #ffffff;
+    text-align: center;
+    /*font-family: "PlusJakartaSans-Medium", sans-serif;*/
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 500;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.recent-watch .tweet-examples {
+    padding: 24px 0 24px 0;
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.recent-watch .tweet-column {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.recent-watch .tweet-row {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    width: 346px;
+    position: relative;
+}
+
+.recent-watch .tweet-row-inner {
+    background: #ffffff;
+    border-radius: 32px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    width: 346px;
+    position: relative;
+}
+
+.recent-watch .tweet-row-inner-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.recent-watch .poster-info-container {
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.recent-watch .profile-picture {
+    border-radius: 48px;
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.recent-watch .img {
+    border-radius: 48px;
+    flex: 1;
+    position: relative;
+    object-fit: cover;
+}
+
+.recent-watch .poster-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.recent-watch .poster-name {
+    color: #222222;
+    text-align: left;
+    /*font-family: "Inter-SemiBold", sans-serif;*/
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.recent-watch .username {
+    color: #808a99;
+    text-align: left;
+    /*font-family: "Inter-Medium", sans-serif;*/
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 500;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.recent-watch .twitter-logo {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    position: relative;
+    overflow: visible;
+}
+
+.recent-watch .tweet-caption {
+    text-align: left;
+    /*font-family: "Inter-Medium", sans-serif;*/
+    font-size: 16px;
+    line-height: 26px;
+    font-weight: 500;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}

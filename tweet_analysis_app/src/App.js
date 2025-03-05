@@ -6,6 +6,7 @@ import Home from './components/Home';
 import './styles/App.css';
 import TweetTable from "./components/TweetTable";
 import HelpRequestForm from './components/HelpRequestForm';
+import {RecentWatch} from "./components/RecentWatch";
 
 const App = () => {
     const [csvData, setCsvData] = useState([]);
@@ -33,6 +34,7 @@ const App = () => {
                         <>
                             <Home/>
                             <TweetTable filePath="/json/bluesky_raw_data_02-26-2025.json"/>
+                            <RecentWatch/>
                         </>
                     } />
                     <Route path="/help-request" element={<HelpRequestForm />} />
