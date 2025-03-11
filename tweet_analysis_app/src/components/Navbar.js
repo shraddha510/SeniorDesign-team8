@@ -2,31 +2,32 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
 
-
-
 const Navbar = () => {
-
     const navigate = useNavigate();
-  
-    const handleRequestHelp = () => {
-      navigate('/help-request');
+    
+    const handleFirstResponderView = () => {
+      navigate('/first-responder');
+    };
+    
+    const handleHomeNavigation = () => {
+      navigate('/');
     };
     
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <div className="logo">Tweet Analysis</div>
+        <div className="logo" onClick={handleHomeNavigation} style={{ cursor: 'pointer' }}>Tweet Analysis</div>
         <div className="nav-right">
           <ul className="nav-links">
-            <li><a href="#home">Home</a></li>
+            <li><a href="/" onClick={(e) => { e.preventDefault(); handleHomeNavigation(); }}>Home</a></li>
             <li><a href="#analytics">Analytics</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
           </ul>
           <div className="nav-buttons">
-            <button className="request" onClick={handleRequestHelp}>
-          Request Help
-        </button>
+            <button className="request responder-btn" onClick={handleFirstResponderView}>
+              First Responder Dashboard
+            </button>
           </div>
         </div>
       </div>

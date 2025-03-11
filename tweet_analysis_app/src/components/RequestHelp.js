@@ -15,7 +15,7 @@ const RequestHelp = () => {
         <h2>Do you need assistance after a disaster?</h2>
         <p>Click here to submit a help request, as well as learn more about resources to help you recover.</p>
         <button className="request-help-button" onClick={handleRequestHelp}>
-          Apply Now
+          Submit Help Request
         </button>
       </div>
     </div>

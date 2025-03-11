@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/HelpRequestForm.css';
+import { useHelpRequests } from '../context/HelpRequestContext';
 
 const HelpRequestForm = () => {
   const navigate = useNavigate();
+  const { addHelpRequest } = useHelpRequests();
+  
   const [formData, setFormData] = useState({
     name: '',
     location: '',
@@ -12,18 +15,57 @@ const HelpRequestForm = () => {
     description: '',
   });
 
+  const [errors, setErrors] = useState({
+    location: '',
+    contactInfo: ''
+  });
+
+  const validateLocation = (location) => {
+    // Check for format like "123 Main St, Springfield, IL"
+    const locationRegex = /^[\w\s\d\-\.,]+,\s[\w\s\d\-\.]+,\s[A-Z]{2}$/;
+    return locationRegex.test(location);
+  };
+
+  const validateContactInfo = (contactInfo) => {
+    // Check for format like "555-123-4567"
+    const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
+    return phoneRegex.test(contactInfo);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+
+    // Clear errors when user types
+    if (name === 'location' || name === 'contactInfo') {
+      setErrors({
+        ...errors,
+        [name]: ''
+      });
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log('Form submitted:', formData);
+    
+    // Validate location and contact info
+    const locationValid = validateLocation(formData.location);
+    const contactValid = validateContactInfo(formData.contactInfo);
+    
+    // If validation fails, set errors and prevent form submission
+    if (!locationValid || !contactValid) {
+      setErrors({
+        location: locationValid ? '' : 'Please enter location in format: 123 Main St, Springfield, IL',
+        contactInfo: contactValid ? '' : 'Please enter phone in format: 555-123-4567'
+      });
+      return;
+    }
+    
+    // Add the help request to the context
+    addHelpRequest(formData);
     
     // Show success message and redirect
     alert('Your help request has been submitted. Emergency services have been notified.');
@@ -61,8 +103,10 @@ const HelpRequestForm = () => {
             value={formData.location}
             onChange={handleChange}
             required
-            placeholder="Address, city, or coordinates"
+            placeholder="123 Main St, Springfield, IL"
+            className={errors.location ? 'input-error' : ''}
           />
+          {errors.location && <div className="error-message">{errors.location}</div>}
         </div>
         
         <div className="form-group">
@@ -74,8 +118,10 @@ const HelpRequestForm = () => {
             value={formData.contactInfo}
             onChange={handleChange}
             required
-            placeholder="Phone number or email"
+            placeholder="555-123-4567"
+            className={errors.contactInfo ? 'input-error' : ''}
           />
+          {errors.contactInfo && <div className="error-message">{errors.contactInfo}</div>}
         </div>
         
         <div className="form-group">

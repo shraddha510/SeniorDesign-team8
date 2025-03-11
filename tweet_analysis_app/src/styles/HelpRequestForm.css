@@ -60,6 +60,23 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 2px rgba(22, 69, 107, 0.2);
 }
 
+.input-error {
+  border-color: #dc3545;
+  background-color: #fff8f8;
+}
+
+.input-error:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
 .submit-button, .cancel-button {
   padding: 12px 24px;
   border: none;
