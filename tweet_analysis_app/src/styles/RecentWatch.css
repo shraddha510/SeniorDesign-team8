@@ -43,7 +43,7 @@
     cursor: pointer;
     text-align: center;
     transition: background-color 0.3s ease;
-    gap: 8px; /* Adds space between logo and text */
+    gap: 8px;
 }
 
 .bluesky-logo {
@@ -141,27 +141,27 @@
 }
 
 .tweet-severity-high {
-    background-color: #ffeaea; /* Light red shade */
-    border-color: #ff4d4d; /* Border red */
-    color: #c0392b; /* Text red */
+    background-color: #ffeaea;
+    border-color: #ff4d4d;
+    color: #c0392b;
 }
 
 .tweet-severity-moderate {
-    background-color: #fffbea; /* Light yellow shade */
-    border-color: #f1c40f; /* Border yellow */
-    color: #d4ac0d; /* Text yellow */
+    background-color: #fffbea;
+    border-color: #f1c40f;
+    color: #d4ac0d;
 }
 
 .tweet-severity-low {
-    background-color: #eaffea; /* Light green shade */
-    border-color: #2ecc71; /* Border green */
-    color: #27ae60; /* Text green */
+    background-color: #eaffea;
+    border-color: #2ecc71;
+    color: #27ae60;
 }
 
 .tweet-severity-unknown {
-    background-color: #f0f4f7; /* Light gray shade */
-    border-color: #95a5a6; /* Border gray */
-    color: #7f8c8d; /* Text gray */
+    background-color: #f0f4f7;
+    border-color: #95a5a6;
+    color: #7f8c8d;
 }
 
 /*.tweet-card:hover {*/
@@ -219,137 +219,3 @@
         grid-template-columns: 1fr; /* 1 column on small screens */
     }
 }
-
-
-/*.tweet-examples {*/
-/*    padding: 24px 0 24px 0;*/
-/*    display: flex;*/
-/*    flex-direction: row;*/
-/*    gap: 16px;*/
-/*    align-items: flex-start;*/
-/*    justify-content: flex-start;*/
-/*    flex-shrink: 0;*/
-/*    position: relative;*/
-/*    overflow: hidden;*/
-/*}*/
-
-/*.tweet-columns {*/
-/*    padding: 0;*/
-/*    display: flex;*/
-/*    flex-direction: column;*/
-/*    gap: 16px;*/
-/*    align-items: center;*/
-/*    justify-content: flex-start;*/
-/*    flex-shrink: 0;*/
-/*    position: relative;*/
-/*    overflow: hidden;*/
-/*}*/
-
-/*!*.tweet-columns:hover {*!*/
-/*!*    content: "";*!*/
-/*!*    position: absolute;*!*/
-/*!*    top: 0;*!*/
-/*!*    left: 0;*!*/
-/*!*    width: 100%;*!*/
-/*!*    height: 100%;*!*/
-/*!*    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);*!*/
-/*!*    transform: translateY(-4px);*!*/
-/*!*    transition: box-shadow 0.3s ease, transform 0.3s ease;*!*/
-/*!*}*!*/
-
-
-/*.tweet-card {*/
-/*    background: #ffffff;*/
-/*    border-radius: 32px;*/
-/*    padding: 24px;*/
-/*    display: flex;*/
-/*    flex-direction: column;*/
-/*    gap: 16px;*/
-/*    align-items: flex-start;*/
-/*    justify-content: flex-start;*/
-/*    flex-shrink: 0;*/
-/*    width: 346px;*/
-/*    position: relative;*/
-/*}*/
-
-/*.tweet-header-container {*/
-/*    display: flex;*/
-/*    justify-content: space-between;*/
-/*    width: 100%;*/
-/*}*/
-
-/*.poster-info-container {*/
-/*    display: flex;*/
-/*    align-items: center;*/
-/*    justify-content: space-between;*/
-/*    width: 100%;*/
-/*}*/
-
-/*.profile-picture {*/
-/*    border-radius: 48px;*/
-/*    display: flex;*/
-/*    flex-direction: row;*/
-/*    gap: 0;*/
-/*    align-items: center;*/
-/*    justify-content: center;*/
-/*    flex-shrink: 0;*/
-/*    position: relative;*/
-/*    overflow: hidden;*/
-/*}*/
-
-/*.image-test {*/
-/*    border-radius: 48px;*/
-/*    flex: 1;*/
-/*    position: relative;*/
-/*    object-fit: cover;*/
-/*}*/
-
-/*.poster-info {*/
-/*    display: flex;*/
-/*    flex-direction: column;*/
-/*    justify-content: center;*/
-/*    flex-shrink: 0;*/
-/*}*/
-
-/*.poster-name {*/
-/*    color: #222222;*/
-/*    text-align: left;*/
-/*    !*font-family: "Inter-SemiBold", sans-serif;*!*/
-/*    font-size: 16px;*/
-/*    line-height: 24px;*/
-/*    font-weight: 600;*/
-/*    position: relative;*/
-/*    display: flex;*/
-/*    align-items: center;*/
-/*    justify-content: flex-start;*/
-/*}*/
-
-/*.username {*/
-/*    color: #808a99;*/
-/*    text-align: left;*/
-/*    !*font-family: "Inter-Medium", sans-serif;*!*/
-/*    font-size: 16px;*/
-/*    line-height: 24px;*/
-/*    font-weight: 500;*/
-/*    position: relative;*/
-/*    display: flex;*/
-/*    align-items: center;*/
-/*    justify-content: flex-start;*/
-/*}*/
-
-/*.bluesky-logo {*/
-/*    width: auto;*/
-/*    height: 22px;*/
-/*}*/
-
-/*.tweet-caption {*/
-/*    text-align: left;*/
-/*    !*font-family: "Inter-Medium", sans-serif;*!*/
-/*    font-size: 16px;*/
-/*    line-height: 26px;*/
-/*    font-weight: 500;*/
-/*    position: relative;*/
-/*    display: flex;*/
-/*    align-items: center;*/
-/*    justify-content: flex-start;*/
-/*}*/
