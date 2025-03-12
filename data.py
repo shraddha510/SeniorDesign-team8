@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import os
 import re
@@ -9,7 +10,7 @@ import emoji
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from langdetect import detect
+from langdetect import detect, LangDetectException
 from supabase import create_client
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
@@ -94,14 +95,23 @@ def download_image(img_url, img_path):
     except Exception as e:
         print(f"Error downloading image: {e}")
         return None
-
+    
+# Function to check if the string contains only English characters
+def isEnglish(s):
+    try:
+        s.encode(encoding='utf-8').decode('ascii')
+    except UnicodeDecodeError:
+        return False
+    else:
+        return True
 
 # Function to clean tweet text
 def clean_text(text):
     try:
-        # Check if the text is in English
-        if detect(text) != 'en':
-            return None
+        # First, check if the text is English using the isEnglish function
+        if not isEnglish(text):
+            # If it's not English, remove non-English characters
+            text = ''.join([char for char in text if char.isascii()])  # Remove non-ASCII characters
 
         # Convert emojis to text
         text = emoji.demojize(text, delimiters=("", " "))
@@ -294,15 +304,15 @@ if __name__ == "__main__":
     all_data = []
 
     for keyword in disaster_keywords:
-        print(f"Searching for posts with keyword: {keyword}")
-        posts_data = fetch_bluesky_posts(keyword)
+            print(f"Searching for posts with keyword: {keyword}")
+            posts_data = fetch_bluesky_posts(keyword)
 
-        if posts_data:
-            all_data.extend(posts_data)
-        else:
-            print(f"No results found for '{keyword}', skipping...")
+            if posts_data:
+                all_data.extend(posts_data)
+            else:
+                print(f"No results found for '{keyword}', skipping...")
 
-        time.sleep(1)
+            time.sleep(1)
 
     if all_data:
         save_data(all_data)
