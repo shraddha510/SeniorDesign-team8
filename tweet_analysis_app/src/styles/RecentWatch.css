@@ -10,12 +10,6 @@
     position: relative;
 }
 
-.header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .title {
     color: #ffffff;
     /*font-family: "Inter-Bold", sans-serif;*/
@@ -37,7 +31,9 @@
 }
 
 .tweet-button {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: #1DA1F2;
     color: white;
     border: none;
@@ -47,8 +43,16 @@
     cursor: pointer;
     text-align: center;
     transition: background-color 0.3s ease;
-
+    gap: 8px; /* Adds space between logo and text */
 }
+
+.bluesky-logo {
+    width: 20px; /* Adjust the size of the logo */
+    height: 20px;
+    display: inline-block;
+    margin-right: 8px; /* Adds a small space to separate the logo from the text */
+}
+
 
 .tweet-button:hover {
     background: #007bff;
@@ -67,135 +71,277 @@
     justify-content: center;
 }
 
-.tweet-examples {
-    padding: 24px 0 24px 0;
+.filter-container {
     display: flex;
     flex-direction: row;
     gap: 16px;
-    align-items: flex-start;
-    justify-content: flex-start;
-    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
     position: relative;
     overflow: hidden;
+    margin: 24px 0;
 }
 
-.tweet-columns {
-    padding: 0;
+.filter-section {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    align-items: center;
-    justify-content: flex-start;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
+    min-width: 200px;
 }
 
-/*.tweet-columns:hover {*/
-/*    content: "";*/
-/*    position: absolute;*/
-/*    top: 0;*/
-/*    left: 0;*/
-/*    width: 100%;*/
-/*    height: 100%;*/
-/*    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);*/
-/*    transform: translateY(-4px);*/
-/*    transition: box-shadow 0.3s ease, transform 0.3s ease;*/
+.filter-section label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: #ffffff;
+}
+
+.filter-section input#cityFilter,
+.filter-section select#severityFilter,
+.filter-section select#disasterFilter {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.2s;
+    background-color: #fff;
+}
+
+.filter-section input#cityFilter:focus,
+.filter-section select#severityFilter:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.filter-section select#severityFilter:hover {
+    background-color: lightgray;
+    transition: background-color 0.3s ease;
+}
+
+.filter-section input#cityFilter::placeholder {
+    color: gray;
+}
+
+
+/* Tweet Grid Container */
+.tweet-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.tweet-card {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tweet-severity-high {
+    background-color: #ffeaea; /* Light red shade */
+    border-color: #ff4d4d; /* Border red */
+    color: #c0392b; /* Text red */
+}
+
+.tweet-severity-moderate {
+    background-color: #fffbea; /* Light yellow shade */
+    border-color: #f1c40f; /* Border yellow */
+    color: #d4ac0d; /* Text yellow */
+}
+
+.tweet-severity-low {
+    background-color: #eaffea; /* Light green shade */
+    border-color: #2ecc71; /* Border green */
+    color: #27ae60; /* Text green */
+}
+
+.tweet-severity-unknown {
+    background-color: #f0f4f7; /* Light gray shade */
+    border-color: #95a5a6; /* Border gray */
+    color: #7f8c8d; /* Text gray */
+}
+
+/*.tweet-card:hover {*/
+/*    transform: translateY(-2px);*/
+/*    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);*/
+/*    border-color: #3498db;*/
 /*}*/
 
 
-.tweet-card {
-    background: #ffffff;
-    border-radius: 32px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-    justify-content: flex-start;
-    flex-shrink: 0;
-    width: 346px;
-    position: relative;
-}
-
-.tweet-header-container {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.poster-info-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.profile-picture {
-    border-radius: 48px;
-    display: flex;
-    flex-direction: row;
-    gap: 0;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.image-test {
-    border-radius: 48px;
-    flex: 1;
-    position: relative;
-    object-fit: cover;
-}
-
-.poster-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.poster-name {
-    color: #222222;
-    text-align: left;
-    /*font-family: "Inter-SemiBold", sans-serif;*/
+.tweet-content {
     font-size: 16px;
-    line-height: 24px;
-    font-weight: 600;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+    margin: 8px 0;
+    color: #444;
 }
 
-.username {
-    color: #808a99;
-    text-align: left;
-    /*font-family: "Inter-Medium", sans-serif;*/
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 500;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+.tweet-info {
+    font-size: 14px;
+    color: #666;
 }
 
-.bluesky-logo {
-    width: auto;
-    height: 22px;
+.tweet-updated {
+    font-size: 12px;
+    color: #999;
 }
 
-.tweet-caption {
-    text-align: left;
-    /*font-family: "Inter-Medium", sans-serif;*/
-    font-size: 16px;
-    line-height: 26px;
-    font-weight: 500;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+.severity-level {
+    font-weight: bold;
 }
+
+.severity-high {
+    color: red;
+}
+
+.severity-moderate {
+    color: orange;
+}
+
+/* Make the layout responsive */
+@media (max-width: 1024px) {
+    .tweet-cards {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .tweet-cards {
+        grid-template-columns: 1fr; /* 1 column on small screens */
+    }
+}
+
+
+/*.tweet-examples {*/
+/*    padding: 24px 0 24px 0;*/
+/*    display: flex;*/
+/*    flex-direction: row;*/
+/*    gap: 16px;*/
+/*    align-items: flex-start;*/
+/*    justify-content: flex-start;*/
+/*    flex-shrink: 0;*/
+/*    position: relative;*/
+/*    overflow: hidden;*/
+/*}*/
+
+/*.tweet-columns {*/
+/*    padding: 0;*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    gap: 16px;*/
+/*    align-items: center;*/
+/*    justify-content: flex-start;*/
+/*    flex-shrink: 0;*/
+/*    position: relative;*/
+/*    overflow: hidden;*/
+/*}*/
+
+/*!*.tweet-columns:hover {*!*/
+/*!*    content: "";*!*/
+/*!*    position: absolute;*!*/
+/*!*    top: 0;*!*/
+/*!*    left: 0;*!*/
+/*!*    width: 100%;*!*/
+/*!*    height: 100%;*!*/
+/*!*    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);*!*/
+/*!*    transform: translateY(-4px);*!*/
+/*!*    transition: box-shadow 0.3s ease, transform 0.3s ease;*!*/
+/*!*}*!*/
+
+
+/*.tweet-card {*/
+/*    background: #ffffff;*/
+/*    border-radius: 32px;*/
+/*    padding: 24px;*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    gap: 16px;*/
+/*    align-items: flex-start;*/
+/*    justify-content: flex-start;*/
+/*    flex-shrink: 0;*/
+/*    width: 346px;*/
+/*    position: relative;*/
+/*}*/
+
+/*.tweet-header-container {*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    width: 100%;*/
+/*}*/
+
+/*.poster-info-container {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: space-between;*/
+/*    width: 100%;*/
+/*}*/
+
+/*.profile-picture {*/
+/*    border-radius: 48px;*/
+/*    display: flex;*/
+/*    flex-direction: row;*/
+/*    gap: 0;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    flex-shrink: 0;*/
+/*    position: relative;*/
+/*    overflow: hidden;*/
+/*}*/
+
+/*.image-test {*/
+/*    border-radius: 48px;*/
+/*    flex: 1;*/
+/*    position: relative;*/
+/*    object-fit: cover;*/
+/*}*/
+
+/*.poster-info {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    justify-content: center;*/
+/*    flex-shrink: 0;*/
+/*}*/
+
+/*.poster-name {*/
+/*    color: #222222;*/
+/*    text-align: left;*/
+/*    !*font-family: "Inter-SemiBold", sans-serif;*!*/
+/*    font-size: 16px;*/
+/*    line-height: 24px;*/
+/*    font-weight: 600;*/
+/*    position: relative;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: flex-start;*/
+/*}*/
+
+/*.username {*/
+/*    color: #808a99;*/
+/*    text-align: left;*/
+/*    !*font-family: "Inter-Medium", sans-serif;*!*/
+/*    font-size: 16px;*/
+/*    line-height: 24px;*/
+/*    font-weight: 500;*/
+/*    position: relative;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: flex-start;*/
+/*}*/
+
+/*.bluesky-logo {*/
+/*    width: auto;*/
+/*    height: 22px;*/
+/*}*/
+
+/*.tweet-caption {*/
+/*    text-align: left;*/
+/*    !*font-family: "Inter-Medium", sans-serif;*!*/
+/*    font-size: 16px;*/
+/*    line-height: 26px;*/
+/*    font-weight: 500;*/
+/*    position: relative;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: flex-start;*/
+/*}*/
