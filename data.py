@@ -9,9 +9,6 @@ from datetime import datetime, timedelta
 import emoji
 import pandas as pd
 import requests
-from dotenv import load_dotenv
-from langdetect import detect, LangDetectException
-from supabase import create_client
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
