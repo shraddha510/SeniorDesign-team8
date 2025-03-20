@@ -12,6 +12,9 @@ const Navbar = () => {
     const handleHomeNavigation = () => {
       navigate('/');
     };
+    const handleAnalyticsNavigation = () => {
+      navigate('/analytics');
+    };
     
   return (
     <nav className="navbar">
@@ -20,7 +23,7 @@ const Navbar = () => {
         <div className="nav-right">
           <ul className="nav-links">
             <li><a href="/" onClick={(e) => { e.preventDefault(); handleHomeNavigation(); }}>Home</a></li>
-            <li><a href="#analytics">Analytics</a></li>
+            <li><a href="/analytics" onClick={(e) => {handleAnalyticsNavigation(); }}>Analytics</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
           </ul>

@@ -13,18 +13,13 @@ function HeatmapLayer({ disasters }) {
         if (!map) return;
 
         const InfoControl = L.Control.extend({
-            options: {
-                position: 'topright'
-            },
+            options: { position: 'topright' },
             onAdd: function () {
-                const container = L.DomUtil.create('div', 'info-control');
-                container.style.padding = '6px 8px';
-                container.style.background = 'white';
-                container.style.background = 'rgba(255,255,255,0.8)';
-                container.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
-                container.style.borderRadius = '5px';
-                container.style.minWidth = '250px';
-                container.innerHTML = '<h4>Hover over a location</h4>';
+                const container = L.DomUtil.create('div', 'info-control disaster-popup');
+                container.innerHTML = `
+                    <h4>Hover over a disaster area</h4>
+                    <p class="popup-subtext">Move your cursor over hotspots for details.</p>
+                `;
                 return container;
             }
         });
@@ -64,12 +59,17 @@ function HeatmapLayer({ disasters }) {
             if (heatLayer) map.removeLayer(heatLayer);
 
             const heat = L.heatLayer(points, {
-                radius: 35,
-                blur: 25,
-                maxZoom: 10,
-                max: 9,
-                gradient: { 0.3: 'blue', 0.45: 'green', 0.6: 'yellow', 0.75: 'orange', 0.9: 'red' },
-                minOpacity: 0.5
+                radius: 40,
+                blur: 30,
+                minOpacity: 0.6,
+                max: 10,
+                gradient: {
+                    0.2: "#3498db",  
+                    0.4: "#2ecc71",  
+                    0.6: "#f1c40f",  
+                    0.8: "#e67e22",  
+                    1.0: "#e74c3c"   
+                }
             }).addTo(map);
 
             setHeatLayer(heat);
@@ -94,12 +94,15 @@ function HeatmapLayer({ disasters }) {
                     if (closestDisaster) {
                         container.innerHTML = `
                             <h4>${closestDisaster.name}</h4>
-                            <p><strong>Disaster Type:</strong> ${closestDisaster.disasterType}</p>
-                            <p><strong>Severity:</strong> ${closestDisaster.severity}</p>
-                            <p><strong>Risk Score:</strong> ${closestDisaster.score}/10</p>
+                            <p class="popup-detail"><strong>Disaster Type:</strong> ${closestDisaster.disasterType}</p>
+                            <p class="popup-detail"><strong>Severity:</strong> ${closestDisaster.severity}</p>
+                            <p class="popup-detail"><strong>Risk Score:</strong> ${closestDisaster.score}/10</p>
                         `;
                     } else {
-                        container.innerHTML = '<h4>Hover over a disaster area</h4>';
+                        container.innerHTML = `
+                            <h4>Hover over a disaster area</h4>
+                            <p class="popup-subtext">Move your cursor over hotspots for details.</p>
+                        `;
                     }
                 }
             });
@@ -117,11 +120,11 @@ function HeatmapLayer({ disasters }) {
 const DisasterMap = () => {
     return (
         <div className="map-container">
-            <h2>US Disaster Risk Heatmap</h2>
+            <h2 className="map-title">US Disaster Risk Heatmap</h2>
             <MapContainer
                 center={[39.8283, -98.5795]}
                 zoom={4}
-                style={{ height: "500px", width: "100%" }}
+                style={{ height: "500px", width: "100%", borderRadius: "10px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -129,42 +132,74 @@ const DisasterMap = () => {
                 />
                 <HeatmapLayer disasters={disasterData} />
             </MapContainer>
+
             <div className="map-legend">
                 <h3>Disaster Risk Legend</h3>
-                <div className="gradient-bar">
-                    <div style={{ background: 'linear-gradient(to right, blue, green, yellow, orange, red)', height: '20px', width: '100%' }}></div>
-                    <div className="legend-labels">
-                        <span>Low Risk</span>
-                        <span>High Risk</span>
-                    </div>
+                <div className="gradient-bar"></div>
+                <div className="legend-labels">
+                    <span>Low Risk</span>
+                    <span>High Risk</span>
                 </div>
                 <p className="legend-tip">Move your cursor over colored areas to see disaster details</p>
             </div>
+
             <style jsx>{`
                 .map-container {
-                    margin: 20px 0;
+                    padding: 20px;
+                    margin-top: 10px;
+                }
+                .map-title {
+                    text-align: center;
+                    font-size: 25px;
+                    margin-bottom: 20px;
+                    color: #0A2A4A;
                 }
                 .map-legend {
-                    margin-top: 10px;
-                    padding: 10px;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                    background-color: white;
+                    background: white;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-top: 30px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                    font-family: 'Inter', sans-serif;
                 }
                 .gradient-bar {
-                    margin: 10px 0;
+                    background: linear-gradient(to right, #3498db, #2ecc71, #f1c40f, #e67e22, #e74c3c);
+                    height: 20px;
+                    width: 100%;
+                    margin-bottom: 10px;
                 }
                 .legend-labels {
                     display: flex;
                     justify-content: space-between;
+                    font-size: 12px;
+                    font-weight: bold;
+                    margin-top: 5px;
                 }
                 .legend-tip {
+                    font-size: 12px;
                     font-style: italic;
-                    font-size: 0.9em;
+                    color: #555;
                     margin-top: 10px;
+                    text-align: center;
                 }
-                h3 {
-                    margin-bottom: 10px;
+                .disaster-popup {
+                    background: rgba(255, 255, 255, 0.95);
+                    padding: 14px;
+                    padding-top: 10px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    font-size: 14px;
+                    width: 250px;
+                }
+                .popup-detail {
+                    font-size: 13px;
+                    color: #333;
+                    margin: 4px 0;
+                }
+                .popup-subtext {
+                    font-size: 12px;
+                    color: #666;
+                    font-style: italic;
                 }
             `}</style>
         </div>

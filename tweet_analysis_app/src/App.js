@@ -9,6 +9,7 @@ import { RecentWatch } from "./components/RecentWatch";
 import DisasterMap from "./components/DisasterMap";
 import FirstResponderDashboard from './components/FirstResponderDashboard';
 import { HelpRequestProvider } from './context/HelpRequestContext';
+import Analytics from "./components/Analytics"; 
 
 const App = () => {
     return (
@@ -27,6 +28,7 @@ const App = () => {
                         } />
                         <Route path="/help-request" element={<HelpRequestForm />} />
                         <Route path="/first-responder" element={<FirstResponderDashboard />} />
+                        <Route path="/analytics" element={<Analytics />} />
                     </Routes>
                 </div>
             </Router>
