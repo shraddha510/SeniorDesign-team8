@@ -64,11 +64,11 @@ function HeatmapLayer({ disasters }) {
                 minOpacity: 0.6,
                 max: 10,
                 gradient: {
-                    0.2: "#3498db",  
-                    0.4: "#2ecc71",  
-                    0.6: "#f1c40f",  
-                    0.8: "#e67e22",  
-                    1.0: "#e74c3c"   
+                    0.2: "#3498db",
+                    0.4: "#2ecc71",
+                    0.6: "#f1c40f",
+                    0.8: "#e67e22",
+                    1.0: "#e74c3c"
                 }
             }).addTo(map);
 
@@ -112,7 +112,7 @@ function HeatmapLayer({ disasters }) {
             if (heatLayer) map.removeLayer(heatLayer);
             map.off('mousemove');
         };
-    }, [map, points, disasters]);
+    }, [map, points, disasters, heatLayer]);
 
     return null;
 }
