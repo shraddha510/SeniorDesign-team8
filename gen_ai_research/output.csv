@@ -1,35 +1,35 @@
-Tweet ID,Timestamp,Tweet,Genuine Disaster,Disaster Type,Location,Severity Score
+Tweet ID,Timestamp,Tweet,Genuine Disaster,Disaster Type,Location,Severity Score,Latitude,Longitude
 7473442,2025-02-26 19:39:02,"globe_showing_europeafrica  earthquake alert globe_showing_europeafrica 
 round_pushpin  location dodecanese islands greece
 straight_ruler  magnitude ml 33
 downwards_button  depth 500 km
 alarm_clock  time 20250226 193649 utc
 link  source emsc
-stay safe",True,earthquake,"Dodecanese Islands, Greece",8.75
+stay safe",True,earthquake,"Dodecanese Islands, Greece",8.75,None,None
 74734423,2025-02-26 19:35:57,"globe_showing_europeafrica  earthquake alert globe_showing_europeafrica 
 round_pushpin  location jujuy argentina
 straight_ruler  magnitude m 33
 downwards_button  depth 23400 km
 alarm_clock  time 20250226 192730 utc
 link  source emsc
-stay safe",True,earthquake,Argentina,8.5
+stay safe",True,earthquake,Argentina,8.5,-29.30520,-67.68989
 565347625,2025-02-26 20:30:31,"police_car_light  flood warning issued february 26 at 115pm mst until february 28 at 1215pm mst by nws glasgow mt police_car_light 
-additional details here",true,flood,Glasgow,6.25
+additional details here",true,flood,Glasgow,6.25,55.85163,-4.24427
 346737434762,2025-02-26 20:19:05,"boi extends time of flood warning for malheur river near vale or till mar 1 344 pm mst
 at wed 26 feb 2025 200421 0000 via iembot
-additional details here",true,Flood,Malheur River near Vale,7.0
+additional details here",true,Flood,Malheur River near Vale,7.0,None,None
 3467374347626,2025-02-26 20:19:05,"boi continues flood warning for malheur river near vale or till mar 1 344 pm mst
 at wed 26 feb 2025 201427 0000 via iembot
-additional details here",true,Flood,Malheur River,7.25
+additional details here",true,Flood,Malheur River,7.25,None,None
 7763347762,2025-02-26 20:19:55,blue_heart yellow_heart blue_heart yellow_heart blue_heart yellow_heart  please help flood social media with this message,False,None,None,None
 375734662,2025-02-26 20:15:04,so basically they want the states to flood burn or be blown apart with no rescue for the people what is the point of the trump administration how can anyone who voted for them still support them when they are literally destroying your country,False,None,None,None
 33347327,2025-02-26 20:24:00,"new weather advisory flood warning 
 
- whatflooding caused by an ice jam  wherea portion of northeast montana including the following county dawson on the yellowstone river near glendive  whenuntil 1215 pm mst friday  see more watchedskysocialappalerts",true,Flood,Northeast Montana including Dawson County near Yellowstone River,8.75
-2673462,2025-02-26 20:14:28,boi continues flood warning for malheur river near vale or till mar 1 344 pm mst link,True,Not Specified,Malheur River near Vale,None
+ whatflooding caused by an ice jam  wherea portion of northeast montana including the following county dawson on the yellowstone river near glendive  whenuntil 1215 pm mst friday  see more watchedskysocialappalerts",true,Flood,Northeast Montana including Dawson County near Yellowstone River,8.75,37.87973,-82.74044
+2673462,2025-02-26 20:14:28,boi continues flood warning for malheur river near vale or till mar 1 344 pm mst link,True,Not Specified,Malheur River near Vale,None,None,None
 33347732,2025-02-26 20:23:58,"new weather advisory flood warning 
 
-the flood warning continues for the following rivers in oregon malheur river near vale affecting malheur county the malheur river system near vale oregon is at moderate flood stage due to recent rains and see more watchedskysocialappalerts",True,Flood,Oregon,5.75
+the flood warning continues for the following rivers in oregon malheur river near vale affecting malheur county the malheur river system near vale oregon is at moderate flood stage due to recent rains and see more watchedskysocialappalerts",True,Flood,Oregon,5.75,45.33791,-122.56989
 254346322,2025-02-26 20:13:11,the flood 1987,False,None,None,None
 75734642,2025-02-26 20:00:06,the heavy rain and flooding that caused so much damage in north queensland has now cleared but in its wake stirs a deadly bacteria that has so far killed 12 people,False,None,None,None
 346334632,2025-02-26 19:59:42,"thats the exact type of flooding that took out like half of my friends building last winter and apparently every property owned by their management company
@@ -37,20 +37,20 @@ the flood warning continues for the following rivers in oregon malheur river nea
 they were like oh its not a plumbing issue its coming in through the roof like broyou get how thats worse right",False,None,None,None
 2533452,2025-02-26 19:58:27,the heavy rain and flooding that caused so much damage in north queensland has now cleared but in its wake stirs a deadly bacteria that has so far killed 12 people,False,None,None,None
 3336276533454626,2025-02-26 19:57:31,"riw issues hydrologic outlook esf at feb 26 1240 pm mst snowmelt and ice jam flooding potential in northcentral wy through next weekend via iembot
-additional details here",true,riw issues hydrologic outlook esf,northcentral wy,4.75
+additional details here",true,riw issues hydrologic outlook esf,northcentral wy,4.75,None,None
 63533473452,2025-02-26 19:55:48,the day over and the adrenaline of a job well done flooding their bodies and minds the sisters celebrate,False,None,None,None
 7533345622,2025-02-26 19:55:46,"kentucky we may get knocked down but we always get back up the devastation from flooding is widespread but were already making progress today at a fema intake center in perry county i saw our neighbors getting the help needed for the road ahead
 
-we will rebuild together",True,Flooding,Kentucky,5.25
+we will rebuild together",True,Flooding,Kentucky,5.25,39.09991,-95.39647
 5444453462,2025-02-26 20:04:50,"residents are rallying against a proposed sheetz gas station fearing it could worsen flooding and environmental damage in stow 
 
 learn more here",False,None,None,None
 77223345346323,2025-02-26 20:03:23,from the brain that brought you flooding northern california puts out fires in southern california because gravity goes down,False,None,None,None
 56534652,2025-02-26 20:00:40,"flood advisory issued february 26 at 1247pm mst until february 28 at 300pm mst by nws glasgow mt
-additional details here",true,flood,Glasgow MT,4.25
+additional details here",true,flood,Glasgow MT,4.25,None,None
 6566534742,2025-02-26 20:30:56,"police_car_light  winter storm warning issued february 26 at 1128am akst until february 27 at 1200am akst by nws juneau ak police_car_light 
-additional details here",true,winter storm,Juneau,4.5
-66225347732,2025-02-26 20:29:00,ajk continues winter storm warning for municipality of skagway ak till feb 27 1200 am akst link,True,Winter Storm,"Skagway, AK",3.0
+additional details here",true,winter storm,Juneau,4.5,58.36118,-134.55041
+66225347732,2025-02-26 20:29:00,ajk continues winter storm warning for municipality of skagway ak till feb 27 1200 am akst link,True,Winter Storm,"Skagway, AK",3.0,59.46230,-135.31330
 46332,2025-02-26 14:17:53,"my heart 
 whines 
 an echo 
@@ -75,7 +75,7 @@ thumb
 i turn the page 
 of my novel",False,None,None,None
 25323332,2025-02-26 18:37:37,thanks for thisi would have been cursing up a storm without the warning,False,None,None,None
-23635332,2025-02-26 18:20:48,the foreign office has issued a warning due to tropical storm garance,True,Tropical Storm,Garance,3.25
+23635332,2025-02-26 18:20:48,the foreign office has issued a warning due to tropical storm garance,True,Tropical Storm,Garance,3.25,42.14211,21.23353
 33334352,2025-02-26 16:34:36,"new weather advisory storm warning 
 
 coastal waters forecast for the northern gulf of alaska coast up to 100 nm out including kodiak island and cook inlet wind forecasts reflect the predominant speed and direction expected sea forecasts represent an see more watchedskysocialappalerts",False,None,None,None
@@ -115,8 +115,8 @@ of our eyes",False,None,None,None
 632344422,2025-02-26 19:38:05,"lol  big call in a time rightly dubbed the golden age of arseholes
 
 tropical fuck storm goon show",False,None,None,None
-23635332,2025-02-26 18:20:48,the foreign office has issued a warning due to tropical storm garance,True,Tropical Storm,Garance,2.25
-2766773375622,2025-02-26 17:56:18,continuing to monitor  and the news are not good for interests on réunion the storm continues to develop nicely and has now likely reached the stage of tropical cyclone category 1 sshws jtwc still progs a major landfall on the island friday night with mfr slightly weaker,True,Tropical Cyclone Category 1,Réunion,6.5
+23635332,2025-02-26 18:20:48,the foreign office has issued a warning due to tropical storm garance,True,Tropical Storm,Garance,2.25,42.14211,21.23353
+2766773375622,2025-02-26 17:56:18,continuing to monitor  and the news are not good for interests on réunion the storm continues to develop nicely and has now likely reached the stage of tropical cyclone category 1 sshws jtwc still progs a major landfall on the island friday night with mfr slightly weaker,True,Tropical Cyclone Category 1,Réunion,6.5,51.30279,-114.04414
 474227333722,2025-02-26 16:56:20,alexa demo sorry i cant find tickets for seattle storm games how about tropical fck storm instead,False,None,None,None
 626332,2025-02-26 16:40:58,the national weather service in binghamton new york has issued a global tropical storm forecast until 1115 pm,False,None,None,None
 445332,2025-02-26 16:34:33,tropical storm force winds and mud better not be on the lineup this year,False,None,None,None
@@ -128,10 +128,10 @@ yet the university decided to host a football game against stanford amid the dev
 learn why collective global action is crucial in establishing longterm  protection in countries like honduras backhand_index_pointing_down_mediumdark_skin_tone 
 bitly40ffuul",False,None,None,None
 433427,2025-02-26 15:00:31,this has been brewing for a few years now but binging on this new tropical fuck storm single and just gonna call it theyre my favorite band going not sure theres even a close second for me at this point,False,None,None,None
-536523352,2025-02-26 13:04:02,tropical storm trami causes floods killing 3  displacing 382k in central philippines urgent aid needed,true,tropical storm,Central Philippines,6.0
+536523352,2025-02-26 13:04:02,tropical storm trami causes floods killing 3  displacing 382k in central philippines urgent aid needed,true,tropical storm,Central Philippines,6.0,7.08383,125.57338
 7727573332,2025-02-26 12:57:19,"ewsg2 gvar  1214utc lband
-full disk with view on two tropical storms garance and honde near madagaskar crop on storm garance with wind 110kmh heading reunion island where its predicted it will became tropical cyclone",True,Tropical Cyclone,Madagascar,6.75
-2766773362,2025-02-26 12:35:07,tropical   has been responding nicely to the decrease in shear overnight recent amsr2 overpass showed a well developed core surrounded by somewhat concentric banding could be at or near the stage of intense tropical cyclone when it reaches réunion prepare accordingly,True,tropical cyclone,Réunion,8.5
+full disk with view on two tropical storms garance and honde near madagaskar crop on storm garance with wind 110kmh heading reunion island where its predicted it will became tropical cyclone",True,Tropical Cyclone,Madagascar,6.75,-18.90652,47.56677
+2766773362,2025-02-26 12:35:07,tropical   has been responding nicely to the decrease in shear overnight recent amsr2 overpass showed a well developed core surrounded by somewhat concentric banding could be at or near the stage of intense tropical cyclone when it reaches réunion prepare accordingly,True,tropical cyclone,Réunion,8.5,51.30279,-114.04414
 542333326223,2025-02-26 09:02:03,three tropical cyclones and a storm in a row in the southern pacific,False,None,None,None
 432224,2025-02-26 08:15:06,alle veertien vet mandrake handshake iona zajac perfume genius  aldous harding saya gray youth lagoon smerz abdomen maruja field music  the nasuwt riverside band tropical fuck storm jenny hval wishy dana gavanski en miki berenyi trio openspotifycomplaylist1gf,False,None,None,None
 62724236322,2025-02-26 05:15:21,"1 of 2
@@ -151,7 +151,7 @@ tropical cyclone bianca
 south pacific
 
 tropical cyclone rae
-tropical cyclone seru",True,severe tropical storm garance,southwest indian ocean,8.25
+tropical cyclone seru",True,severe tropical storm garance,southwest indian ocean,8.25,None,None
 6322677322,2025-02-26 01:41:45,"wednesday video on
 
  tropical storm  and its significant  threat to  and  this week
