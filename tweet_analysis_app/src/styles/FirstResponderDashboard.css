@@ -175,7 +175,7 @@
 
 .request-details p {
   margin: 0.75rem 0;
-  color: #34495e;
+  color: #1D3557;
   line-height: 1.5;
 }
 
@@ -211,4 +211,41 @@
   .filter-group {
     width: 100%;
   }
+}
+
+/* Summary Section Styling */
+.summary-container {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.summary-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.summary-item {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.summary-label {
+    margin: 0;
+    font-size: 14px;
+    color: #666666;
+    margin-bottom: 5px;
+}
+
+.summary-value {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #2A5DB0;
 } 

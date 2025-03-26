@@ -10,6 +10,13 @@ const FirstResponderDashboard = () => {
     timeFrame: 'all'
   });
 
+  // Calculate statistics
+  const stats = {
+    totalRequests: helpRequests.length,
+    pending: helpRequests.filter(request => request.status === 'pending').length,
+    resolved: helpRequests.filter(request => request.status === 'resolved').length
+  };
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters({
@@ -80,6 +87,24 @@ const FirstResponderDashboard = () => {
       <h1>First Responder Dashboard</h1>
       <p>View and manage emergency assistance requests below.</p>
       
+      {/* Add Summary Section */}
+      <div className="summary-container">
+        <div className="summary-box">
+          <div className="summary-item">
+            <p className="summary-label">Total Requests</p>
+            <p className="summary-value">{stats.totalRequests}</p>
+          </div>
+          <div className="summary-item">
+            <p className="summary-label">Pending Requests</p>
+            <p className="summary-value">{stats.pending}</p>
+          </div>
+          <div className="summary-item">
+            <p className="summary-label">Resolved Requests</p>
+            <p className="summary-value">{stats.resolved}</p>
+          </div>
+        </div>
+      </div>
+
       <div className="dashboard-content">
         <div className="filter-panel">
           <div className="filter-controls">

@@ -1,94 +1,95 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import '../styles/TweetTable.css';
+import { createClient } from '@supabase/supabase-js';
 
-// hard coded for now as example --> once integrated with database, will replace
-const tweetData = [
-    {
-        "rank": 1,
-        "postContent": "Trapped in our house, fire all around! Please send help!",
-        "location": "Los Angeles, CA",
-        "disasterType": "Wildfire",
-        "severity": { "level": "High", "score": 9, "color": "high" },
-        "lastUpdated": "04/17/25 at 8:25 PM"
-    },
-    {
-        "rank": 2,
-        "postContent": "Our entire neighborhood is flooded, people on rooftops. No power, no food.",
-        "location": "New Orleans, LA",
-        "disasterType": "Flood",
-        "severity": { "level": "High", "score": 9, "color": "high" },
-        "lastUpdated": "04/15/25 at 6:40 PM"
-    },
-    {
-        "rank": 3,
-        "postContent": "Tornado ripped through our town, homes destroyed, people missing. We need help ASAP!",
-        "location": "Oklahoma City, OK",
-        "disasterType": "Tornado",
-        "severity": { "level": "High", "score": 8, "color": "high" },
-        "lastUpdated": "04/18/25 at 3:30 PM"
-    },
-    {
-        "rank": 4,
-        "postContent": "Earthquake hit! My apartment collapsed, people are trapped under rubble. Emergency services needed NOW!",
-        "location": "San Francisco, CA",
-        "disasterType": "Earthquake",
-        "severity": { "level": "High", "score": 8, "color": "high" },
-        "lastUpdated": "04/20/25 at 9:50 AM"
-    },
-    {
-        "rank": 5,
-        "postContent": "Hurricane destroyed homes, roads blocked, no cell service. We’re running out of supplies.",
-        "location": "Miami, FL",
-        "disasterType": "Hurricane",
-        "severity": { "level": "Moderate", "score": 7, "color": "moderate" },
-        "lastUpdated": "04/16/25 at 5:15 PM"
-    },
-    {
-        "rank": 6,
-        "postContent": "Major landslide just happened, a few houses got buried! Emergency crews needed.",
-        "location": "Seattle, WA",
-        "disasterType": "Landslide",
-        "severity": { "level": "Moderate", "score": 6, "color": "moderate" },
-        "lastUpdated": "04/19/25 at 11:45 AM"
-    },
-    {
-        "rank": 7,
-        "postContent": "Floodwaters rising fast, some elderly neighbors stuck in their homes!",
-        "location": "Houston, TX",
-        "disasterType": "Flood",
-        "severity": { "level": "Moderate", "score": 6, "color": "moderate" },
-        "lastUpdated": "04/21/25 at 7:00 AM"
-    },
-    {
-        "rank": 8,
-        "postContent": "Wildfire spreading fast, we can’t see through the smoke. Trying to evacuate but roads are blocked.",
-        "location": "Denver, CO",
-        "disasterType": "Wildfire",
-        "severity": { "level": "Moderate", "score": 6, "color": "moderate" },
-        "lastUpdated": "04/22/25 at 2:30 PM"
-    },
-    {
-        "rank": 9,
-        "postContent": "Aftershocks keep hitting, buildings shaking. People are scared.",
-        "location": "Anchorage, AK",
-        "disasterType": "Earthquake",
-        "severity": { "level": "Moderate", "score": 5, "color": "moderate" },
-        "lastUpdated": "04/23/25 at 4:10 PM"
-    },
-    {
-        "rank": 10,
-        "postContent": "Tornado warning just hit, some damage already visible. Hoping it doesn’t get worse.",
-        "location": "Wichita, KS",
-        "disasterType": "Tornado",
-        "severity": { "level": "Moderate", "score": 5, "color": "moderate" },
-        "lastUpdated": "04/24/25 at 10:20 AM"
-    }
-];
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.REACT_APP_SUPABASE_URL,
+  process.env.REACT_APP_SUPABASE_KEY
+);
 
 const TopTweetsTable = () => {
+  const [tweets, setTweets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTweets = async () => {
+      try {
+        console.log('Fetching tweets from Supabase...');
+        
+        // First, let's check if we can get any data at all
+        const { data: allData, error: allDataError } = await supabase
+          .from('gen_ai_output')
+          .select('*')
+          .limit(1);
+
+        if (allDataError) {
+          console.error('Error fetching all data:', allDataError);
+          throw allDataError;
+        }
+
+        console.log('Sample of all data:', allData);
+
+        // Now try our specific query
+        const { data, error } = await supabase
+          .from('gen_ai_output')
+          .select('*')
+          .order('severity_score', { ascending: false })  // Changed to lowercase
+          .limit(10);
+
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+
+        console.log('Raw data from Supabase:', data);
+
+        // Transform the data to match our table structure
+        const transformedData = data.map((tweet, index) => {
+          console.log('Processing tweet:', tweet);
+          return {
+            rank: index + 1,
+            postContent: tweet.tweet || tweet.Tweet,  // Try both cases
+            location: tweet.location || tweet.Location || 'Not Specified',
+            disasterType: tweet.disaster_type || tweet['Disaster Type'] || 'Not Specified',
+            severity: {
+              level: getSeverityLevel(parseFloat(tweet.severity_score || tweet['Severity Score'])),
+              score: tweet.severity_score || tweet['Severity Score'],
+              color: getSeverityColor(parseFloat(tweet.severity_score || tweet['Severity Score']))
+            },
+            lastUpdated: new Date(tweet.timestamp || tweet.Timestamp).toLocaleString()
+          };
+        });
+
+        console.log('Transformed data:', transformedData);
+        setTweets(transformedData);
+      } catch (error) {
+        console.error('Error fetching tweets:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTweets();
+  }, []);
+
+  const getSeverityLevel = (score) => {
+    if (score >= 8) return 'High';
+    if (score >= 5) return 'Moderate';
+    return 'Low';
+  };
+
+  const getSeverityColor = (score) => {
+    if (score >= 8) return 'high';
+    if (score >= 5) return 'moderate';
+    return 'low';
+  };
+
+  if (loading) return <div className="table-container">Loading tweets...</div>;
+
   return (
     <div className="table-container">
-      <h2 className="table-title">Top 10 Posts Across The Country</h2>
+      <h2 className="table-title">Top 10 Disaster Posts Across The Country</h2>
       <p className="table-subtitle">Ranked by severity score</p>
 
       <table className="tweets-table">
@@ -103,8 +104,8 @@ const TopTweetsTable = () => {
           </tr>
         </thead>
         <tbody>
-          {tweetData.map((tweet) => (
-            <tr key={tweet.id}>
+          {tweets.map((tweet) => (
+            <tr key={tweet.rank}>
               <td className="rank">{tweet.rank}</td>
               <td>{tweet.postContent}</td>
               <td>{tweet.location}</td>
