@@ -35,11 +35,17 @@ function HeatmapLayer({ disasters }) {
         };
     }, [map]);
 
-    const points = disasters.map(disaster => [
-        disaster.latitude,
-        disaster.longitude,
-        disaster.score
-    ]);
+    const points = disasters.map(disaster => {
+        const intensity = disaster.score > 7 ? 1.0 :
+            disaster.score > 5 ? 0.7 :
+                disaster.score > 3 ? 0.4 : 0.2;
+
+        return [
+            disaster.latitude,
+            disaster.longitude,
+            intensity
+        ];
+    });
 
     React.useEffect(() => {
         if (!map || !L.heatLayer) {
@@ -59,16 +65,16 @@ function HeatmapLayer({ disasters }) {
             if (heatLayer) map.removeLayer(heatLayer);
 
             const heat = L.heatLayer(points, {
-                radius: 40,
-                blur: 30,
-                minOpacity: 0.6,
-                max: 10,
+                radius: 30,
+                blur: 25,
+                maxZoom: 1,
+                max: 1.0,
                 gradient: {
-                    0.2: "#3498db",
-                    0.4: "#2ecc71",
-                    0.6: "#f1c40f",
-                    0.8: "#e67e22",
-                    1.0: "#e74c3c"
+                    0.0: 'blue',
+                    0.2: 'green',
+                    0.4: 'yellow',
+                    0.7: 'orange',
+                    1.0: 'red'
                 }
             }).addTo(map);
 
