@@ -134,12 +134,11 @@ const HelpRequestForm = () => {
             required
           >
             <option value="">Select emergency type</option>
-            <option value="flood">Flood</option>
-            <option value="fire">Fire</option>
-            <option value="earthquake">Earthquake</option>
-            <option value="hurricane">Hurricane</option>
-            <option value="tornado">Tornado</option>
-            <option value="medical">Medical Emergency</option>
+            <option value="flood">Flood 🌊</option>
+            <option value="fire">Fire 🔥</option>
+            <option value="earthquake">Earthquake 🏚️</option>
+            <option value="hurricane">Hurricane 🌀</option>
+            <option value="tornado">Tornado 🌪️</option>
             <option value="other">Other</option>
           </select>
         </div>
