@@ -29,17 +29,9 @@ export const RecentWatch = ({className}) => {
     }, []);
 
     const severityRanges = [
-        {label: '0.0-0.99', min: 0.0, max: 0.99},
-        {label: '1.0-1.99', min: 1.0, max: 1.99},
-        {label: '2.0-2.99', min: 2.0, max: 2.99},
-        {label: '3.0-3.99', min: 3.0, max: 3.99},
-        {label: '4.0-4.99', min: 4.0, max: 4.99},
-        {label: '5.0-5.99', min: 5.0, max: 5.99},
-        {label: '6.0-6.99', min: 6.0, max: 6.99},
-        {label: '7.0-7.99', min: 7.0, max: 7.99},
-        {label: '8.0-8.99', min: 8.0, max: 8.99},
-        {label: '9.0-9.99', min: 9.0, max: 9.99},
-        {label: '10.0', min: 10.0, max: 10.0},
+        {label: '0.0-3.99', min: 0.0, max: 3.99, className: 'low'},
+        {label: '4.0-6.99', min: 4.0, max: 6.99, className: 'moderate'},
+        {label: '7.0-10.0', min: 7.0, max: 10.0, className: 'high'},
     ];
 
     const filteredTweets = tweets.filter((tweet) => {
@@ -112,21 +104,26 @@ export const RecentWatch = ({className}) => {
             </div>
 
             <div className="tweet-cards">
-                {filteredTweets.length > 0 ? (filteredTweets.map((tweet, index) => (
-                    <div key={index} className={`tweet-card tweet-severity-${tweet.severity_score}`}>
-                        <img
-                            className="bluesky-logo"
-                            src="/bluesky_logo.png"
-                            alt="BlueSky Logo"
-                        />
+                {filteredTweets.length > 0 ? (filteredTweets.map((tweet, index) => {
+                    const severityClass = severityRanges.find(range =>
+                        Number(tweet.severity_score) >= range.min && Number(tweet.severity_score) <= range.max
+                    )?.className || 'unknown';
 
-                        <p className="tweet-content">{tweet.tweet_text}</p>
-                        <p className="tweet-info">
-                            <span className="tweet-location">{tweet.location}</span> - {tweet.disaster_type}
-                            <span className="tweet-severity"> (Score: {tweet.severity_score})</span>
-                        </p>
-                    </div>
-                ))) : (<p className="no-tweets">No tweets match the selected filters.</p>)}
+                    return (
+                        <div key={index} className={`tweet-card tweet-severity-${severityClass}`}>
+                            <img
+                                className="bluesky-logo"
+                                src="/bluesky_logo.png"
+                                alt="BlueSky Logo"
+                            />
+                            <p className="tweet-content">{tweet.tweet_text}</p>
+                            <p className="tweet-info">
+                                <span className="tweet-location">{tweet.location}</span> - {tweet.disaster_type}
+                                <span className="tweet-severity"> (Score: {tweet.severity_score})</span>
+                            </p>
+                        </div>
+                    );
+                })) : (<p className="no-tweets">No tweets match the selected filters.</p>)}
             </div>
         </div>
     );

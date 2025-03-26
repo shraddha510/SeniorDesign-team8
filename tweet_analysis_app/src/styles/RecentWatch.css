@@ -130,6 +130,8 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
+    padding: 0 15%;
+    grid-auto-rows: min-content;
 }
 
 .tweet-card {
