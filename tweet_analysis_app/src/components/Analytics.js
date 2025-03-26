@@ -5,51 +5,72 @@ import {
     CartesianGrid
 } from "recharts";
 import "../styles/Analytics.css";
+import { useHelpRequests } from '../context/HelpRequestContext';
 
 const COLORS = ["#FF6666", "#FFCC33", "#66CC66", "#6699FF"];
 
 const Analytics = () => {
+    const { helpRequests } = useHelpRequests();
     const [disasterTrends, setDisasterTrends] = useState([]);
     const [disasterTypes, setDisasterTypes] = useState([]);
     const [affectedLocations, setAffectedLocations] = useState([]);
     const [severityDistribution, setSeverityDistribution] = useState([]);
-    const [emergencyStats, setEmergencyStats] = useState([]);
+    const [emergencyStats, setEmergencyStats] = useState({
+        totalRequests: 0,
+        pending: 0,
+        resolved: 0
+    });
 
-    {/* Hard coded for now */}
     useEffect(() => {
-        setDisasterTrends([
-            { date: "March 10", tweets: 200 },
-            { date: "March 11", tweets: 450 },
-            { date: "March 12", tweets: 600 },
-            { date: "March 13", tweets: 750 },
-        ]);
+        // Calculate emergency stats from help requests
+        const stats = {
+            totalRequests: helpRequests.length,
+            pending: helpRequests.filter(request => request.status === 'pending').length,
+            resolved: helpRequests.filter(request => request.status === 'resolved').length
+        };
+        setEmergencyStats(stats);
 
-        setDisasterTypes([
-            { name: "Flood", value: 300 },
-            { name: "Wildfire", value: 500 },
-            { name: "Earthquake", value: 200 },
-            { name: "Hurricane", value: 400 },
-        ]);
-
-        setAffectedLocations([
-            { location: "Maine", tweets: 1200 },
-            { location: "Florida", tweets: 950 },
-            { location: "Texas", tweets: 800 },
-            { location: "Georgia", tweets: 400 },
-        ]);
-
-        setSeverityDistribution([
-            { severity: "Low", count: 400 },
-            { severity: "Moderate", count: 700 },
-            { severity: "High", count: 600 },
-        ]);
-        
-        setEmergencyStats({
-            totalRequests: 150,
-            pending: 45,
-            resolved: 105,
+        // Calculate disaster types distribution
+        const types = {};
+        helpRequests.forEach(request => {
+            types[request.emergencyType] = (types[request.emergencyType] || 0) + 1;
         });
-    }, []);
+        setDisasterTypes(Object.entries(types).map(([name, value]) => ({ name, value })));
+
+        // Calculate affected locations
+        const locations = {};
+        helpRequests.forEach(request => {
+            locations[request.location] = (locations[request.location] || 0) + 1;
+        });
+        setAffectedLocations(Object.entries(locations)
+            .map(([location, tweets]) => ({ location, tweets }))
+            .sort((a, b) => b.tweets - a.tweets)
+            .slice(0, 4));
+
+        // Calculate severity distribution based on status
+        const severityCounts = {
+            'High': helpRequests.filter(request => request.status === 'pending').length,
+            'Moderate': helpRequests.filter(request => request.status === 'in-progress').length,
+            'Low': helpRequests.filter(request => request.status === 'resolved').length
+        };
+        setSeverityDistribution(Object.entries(severityCounts)
+            .map(([severity, count]) => ({ severity, count })));
+
+        // Calculate disaster trends over time (last 4 days)
+        const today = new Date();
+        const trends = [];
+        for (let i = 3; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dayStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const count = helpRequests.filter(request => {
+                const requestDate = new Date(request.timestamp);
+                return requestDate.toDateString() === date.toDateString();
+            }).length;
+            trends.push({ date: dayStr, tweets: count });
+        }
+        setDisasterTrends(trends);
+    }, [helpRequests]);
 
     return (
         <div className="analytics-container">
