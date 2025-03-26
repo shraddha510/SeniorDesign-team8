@@ -1,94 +1,55 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import '../styles/RecentWatch.css';
-
-// tweetData taken from TweetTable.js for now
-const tweetData = [
-    {
-        postContent: "Trapped in our house, fire all around! Please send help!",
-        location: "Los Angeles, CA",
-        disasterType: "Wildfire",
-        severity: {level: "High", score: 9, color: "high"},
-        lastUpdated: "04/17/25 at 8:25 PM",
-    },
-    {
-        postContent: "Our entire neighborhood is flooded, people on rooftops. No power, no food.",
-        location: "New Orleans, LA",
-        disasterType: "Flood",
-        severity: {level: "High", score: 9, color: "high"},
-        lastUpdated: "04/15/25 at 6:40 PM",
-    },
-    {
-        postContent: "Tornado ripped through our town, homes destroyed, people missing. We need help ASAP!",
-        location: "Oklahoma City, OK",
-        disasterType: "Tornado",
-        severity: {level: "High", score: 8, color: "high"},
-        lastUpdated: "04/18/25 at 3:30 PM",
-    },
-    {
-        postContent: "Earthquake hit! My apartment collapsed, people are trapped under rubble. Emergency services needed NOW!",
-        location: "San Francisco, CA",
-        disasterType: "Earthquake",
-        severity: {level: "High", score: 8, color: "high"},
-        lastUpdated: "04/20/25 at 9:50 AM",
-    },
-    {
-        postContent: "Hurricane destroyed homes, roads blocked, no cell service. We’re running out of supplies.",
-        location: "Miami, FL",
-        disasterType: "Hurricane",
-        severity: {level: "Moderate", score: 7, color: "moderate"},
-        lastUpdated: "04/16/25 at 5:15 PM",
-    },
-    {
-        postContent: "Major landslide just happened, a few houses got buried! Emergency crews needed.",
-        location: "Seattle, WA",
-        disasterType: "Landslide",
-        severity: {level: "Moderate", score: 6, color: "moderate"},
-        lastUpdated: "04/19/25 at 11:45 AM",
-    },
-    {
-        postContent: "Floodwaters rising fast, some elderly neighbors stuck in their homes!",
-        location: "Houston, TX",
-        disasterType: "Flood",
-        severity: {level: "Moderate", score: 6, color: "moderate"},
-        lastUpdated: "04/21/25 at 7:00 AM",
-    },
-    {
-        postContent: "Wildfire spreading fast, we can’t see through the smoke. Trying to evacuate but roads are blocked.",
-        location: "Denver, CO",
-        disasterType: "Wildfire",
-        severity: {level: "Moderate", score: 6, color: "moderate"},
-        lastUpdated: "04/22/25 at 2:30 PM",
-    },
-    {
-        postContent: "Aftershocks keep hitting, buildings shaking. People are scared.",
-        location: "Anchorage, AK",
-        disasterType: "Earthquake",
-        severity: {level: "Moderate", score: 5, color: "moderate"},
-        lastUpdated: "04/23/25 at 4:10 PM",
-    },
-    {
-        postContent: "Tornado warning just hit, some damage already visible. Hoping it doesn’t get worse.",
-        location: "Wichita, KS",
-        disasterType: "Tornado",
-        severity: {level: "Moderate", score: 5, color: "moderate"},
-        lastUpdated: "04/24/25 at 10:20 AM",
-    },
-];
-
+import {supabase} from '../supabase.js';
 
 export const RecentWatch = ({className}) => {
+    const [tweets, setTweets] = useState([]);
     const [selectedDisaster, setSelectedDisaster] = useState(null);
-    const [selectedSeverity, setSelectedSeverity] = useState(null);
-    const [selectedCity, setSelectedCity] = useState("");
+    const [selectedSeverityRange, setSelectedSeverityRange] = useState(null);
+    const [selectedCity, setSelectedCity] = useState('');
 
-    const filteredTweets = tweetData.filter((tweet) => {
-        const matchesDisaster = selectedDisaster === null || tweet.disasterType === selectedDisaster;
-        const matchesSeverity = selectedSeverity === null || tweet.severity.score === selectedSeverity;
-        const matchesCity = selectedCity === "" || tweet.location.toLowerCase().includes(selectedCity.toLowerCase());
+    useEffect(() => {
+        const fetchTweets = async () => {
+            const {data, error} = await supabase
+                .from('gen_ai_output')
+                .select('tweet_text, disaster_type, location, severity_score')
+                .eq('genuine_disaster', true) // Only fetch tweets where genuine_disaster is TRUE
+                .order('timestamp', {ascending: false});
+
+            if (error) {
+                console.error('Error fetching tweets:', error);
+                setTweets(null)
+            } else {
+                console.log('Fetched data:', data);
+                setTweets(data);
+            }
+        };
+
+        fetchTweets();
+    }, []);
+
+    const severityRanges = [
+        {label: '0.0-0.99', min: 0.0, max: 0.99},
+        {label: '1.0-1.99', min: 1.0, max: 1.99},
+        {label: '2.0-2.99', min: 2.0, max: 2.99},
+        {label: '3.0-3.99', min: 3.0, max: 3.99},
+        {label: '4.0-4.99', min: 4.0, max: 4.99},
+        {label: '5.0-5.99', min: 5.0, max: 5.99},
+        {label: '6.0-6.99', min: 6.0, max: 6.99},
+        {label: '7.0-7.99', min: 7.0, max: 7.99},
+        {label: '8.0-8.99', min: 8.0, max: 8.99},
+        {label: '9.0-9.99', min: 9.0, max: 9.99},
+        {label: '10.0', min: 10.0, max: 10.0},
+    ];
+
+    const filteredTweets = tweets.filter((tweet) => {
+        const matchesDisaster = selectedDisaster === null || tweet.disaster_type.toLowerCase() === selectedDisaster.toLowerCase();
+        const matchesSeverity = selectedSeverityRange === null ||
+            (Number(tweet.severity_score) >= selectedSeverityRange.min && Number(tweet.severity_score) <= selectedSeverityRange.max);
+        const matchesCity = selectedCity === '' || tweet.location.toLowerCase().includes(selectedCity.toLowerCase());
 
         return matchesDisaster && matchesSeverity && matchesCity;
     });
-
 
     return (
         <div className={"recent-watch " + (className || "")}>
@@ -115,7 +76,7 @@ export const RecentWatch = ({className}) => {
                         onChange={(e) => setSelectedDisaster(e.target.value || null)}
                     >
                         <option value="">Select a disaster type</option>
-                        {[...new Set(tweetData.map(tweet => tweet.disasterType))]
+                        {[...new Set(tweets.map(tweet => tweet.disaster_type.toLowerCase()))] // Getting unique disaster types in lowercase
                             .map(disasterType => (
                                 <option key={disasterType} value={disasterType}>{disasterType}</option>))}
                     </select>
@@ -125,13 +86,16 @@ export const RecentWatch = ({className}) => {
                     <label htmlFor="severityFilter">Severity Score:</label>
                     <select
                         id="severityFilter"
-                        value={selectedSeverity !== null ? selectedSeverity : ''}
-                        onChange={(e) => setSelectedSeverity(Number(e.target.value) || null)}
+                        value={selectedSeverityRange !== null ? selectedSeverityRange.label : ''}
+                        onChange={(e) => {
+                            const selectedRange = severityRanges.find(range => range.label === e.target.value);
+                            setSelectedSeverityRange(selectedRange || null);
+                        }}
                     >
-                        <option value="">Select a severity score</option>
-                        {[...new Set(tweetData.map(tweet => tweet.severity.score))]
-                            .sort((a, b) => a - b)
-                            .map(score => (<option key={score} value={score}>{score}</option>))}
+                        <option value="">Select a severity score range</option>
+                        {severityRanges.map(range => (
+                            <option key={range.label} value={range.label}>{range.label}</option>
+                        ))}
                     </select>
                 </div>
 
@@ -147,20 +111,19 @@ export const RecentWatch = ({className}) => {
                 </div>
             </div>
 
-
             <div className="tweet-cards">
                 {filteredTweets.length > 0 ? (filteredTweets.map((tweet, index) => (
-                    <div key={index} className={`tweet-card tweet-severity-${tweet.severity.color}`}>
+                    <div key={index} className={`tweet-card tweet-severity-${tweet.severity_score}`}>
                         <img
                             className="bluesky-logo"
                             src="/bluesky_logo.png"
                             alt="BlueSky Logo"
                         />
 
-                        <p className="tweet-content">{tweet.postContent}</p>
+                        <p className="tweet-content">{tweet.tweet_text}</p>
                         <p className="tweet-info">
-                            <span className="tweet-location">{tweet.location}</span> - {tweet.disasterType}
-                            <span className="tweet-severity"> (Score: {tweet.severity.score})</span>
+                            <span className="tweet-location">{tweet.location}</span> - {tweet.disaster_type}
+                            <span className="tweet-severity"> (Score: {tweet.severity_score})</span>
                         </p>
                     </div>
                 ))) : (<p className="no-tweets">No tweets match the selected filters.</p>)}

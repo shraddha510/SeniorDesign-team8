@@ -8,6 +8,7 @@
     align-items: center;
     justify-content: flex-start;
     position: relative;
+    min-height: 100vh;
 }
 
 .title {
