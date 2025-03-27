@@ -11,7 +11,7 @@ const TopTweetsTable = () => {
       try {
         console.log('Fetching tweets from Supabase...');
         
-        // First, let's check if we can get any data at all
+        //  Check if we can get any data at all
         const { data: allData, error: allDataError } = await supabase
           .from('gen_ai_output')
           .select('*')
@@ -24,7 +24,7 @@ const TopTweetsTable = () => {
 
         console.log('Sample of all data:', allData);
 
-        // Now try our specific query - filtering for genuine disasters with non-null severity scores 
+        // Use specific query - filtering for genuine disasters with non-null severity scores 
         // and sorting by severity_score in descending order
         const { data, error } = await supabase
           .from('gen_ai_output')
@@ -41,7 +41,6 @@ const TopTweetsTable = () => {
 
         console.log('Raw data from Supabase:', data);
 
-        // Transform the data to match our table structure
         // Only include tweets that have a valid severity score
         const transformedData = data
           .filter(tweet => {
