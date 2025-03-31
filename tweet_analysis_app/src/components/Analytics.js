@@ -1,168 +1,283 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
-    LineChart, Line, PieChart, Pie, Cell, BarChart, Bar,
-    XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
-    CartesianGrid
+  LineChart, Line, PieChart, Pie, Cell, BarChart, Bar,
+  XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid
 } from "recharts";
+import Select from "react-select";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 import "../styles/Analytics.css";
+import KPICarousel from "./KPICarousel.js";
 
+// Color palette 
 const COLORS = ["#FF6666", "#FFCC33", "#66CC66", "#6699FF"];
 
 const Analytics = () => {
-    const [disasterTrends, setDisasterTrends] = useState([]);
-    const [disasterTypes, setDisasterTypes] = useState([]);
-    const [affectedLocations, setAffectedLocations] = useState([]);
-    const [severityDistribution, setSeverityDistribution] = useState([]);
-    const [emergencyStats, setEmergencyStats] = useState([]);
+  // ------------------ State Variables ------------------
+  const [disasterTrends, setDisasterTrends] = useState([]);
+  const [affectedLocations, setAffectedLocations] = useState([]);
+  const [emergencyStats, setEmergencyStats] = useState([]);
+  const [kpiStats, setKPIStats] = useState({
+    totalDisasters: 0,
+    activeDisasters: [],
+    tweetsLast24h: 0,
+    avgSeverity: 0,
+  });
 
-    {/* Hard coded for now */}
-    useEffect(() => {
-        setDisasterTrends([
-            { date: "March 10", tweets: 200 },
-            { date: "March 11", tweets: 450 },
-            { date: "March 12", tweets: 600 },
-            { date: "March 13", tweets: 750 },
-        ]);
+  // Filter state
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [severityThreshold, setSeverityThreshold] = useState(0);
 
-        setDisasterTypes([
-            { name: "Flood", value: 300 },
-            { name: "Wildfire", value: 500 },
-            { name: "Earthquake", value: 200 },
-            { name: "Hurricane", value: 400 },
-        ]);
+  // ------------------ Filtered + Computed Data ------------------
 
-        setAffectedLocations([
-            { location: "Maine", tweets: 1200 },
-            { location: "Florida", tweets: 950 },
-            { location: "Texas", tweets: 800 },
-            { location: "Georgia", tweets: 400 },
-        ]);
+  // Filter data by type, date, and severity
+  const filteredData = useMemo(() => {
+    return disasterTrends
+      .filter(item => selectedTypes.length === 0 || selectedTypes.includes(item.type))
+      .filter(item => {
+        const itemDate = new Date(item.date);
+        const fromDate = dateRange.from ? new Date(dateRange.from) : null;
+        const toDate = dateRange.to ? new Date(dateRange.to) : null;
+        return (!fromDate || itemDate >= fromDate) && (!toDate || itemDate <= toDate);
+      })
+      .filter(item => item.severity >= severityThreshold);
+  }, [disasterTrends, selectedTypes, dateRange, severityThreshold]);
 
-        setSeverityDistribution([
-            { severity: "Low", count: 400 },
-            { severity: "Moderate", count: 700 },
-            { severity: "High", count: 600 },
-        ]);
-        
-        setEmergencyStats({
-            totalRequests: 150,
-            pending: 45,
-            resolved: 105,
-        });
-    }, []);
+  // Group filtered data for multi-line & stacked bar charts
+  const groupedLineChartData = useMemo(() => {
+    const grouped = {};
+    filteredData.forEach(({ date, type, tweets }) => {
+      if (!grouped[date]) grouped[date] = { date };
+      grouped[date][type] = (grouped[date][type] || 0) + tweets;
+    });
+    return Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [filteredData]);
 
-    return (
-        <div className="analytics-container">
-            <h1 class="title2">Disaster Analytics Dashboard</h1>
+  // Filter affected locations using topDisaster + severity
+  const filteredAffectedLocations = useMemo(() => {
+    return affectedLocations
+      .filter(item => selectedTypes.length === 0 || selectedTypes.includes(item.topDisaster))
+      .filter(item => item.avgSeverity >= severityThreshold);
+  }, [affectedLocations, selectedTypes, severityThreshold]);
 
-            {/* Emergency Requests */}
-            <div className="summary-container">
-                <h2>Emergency Request Statistics</h2>
-                <div className="summary-box">
-                    <div className="summary-item">
-                        <p className="summary-label">Total Requests</p>
-                        <p className="summary-value">{emergencyStats.totalRequests}</p>
-                    </div>
-                    <div className="summary-item">
-                        <p className="summary-label">Pending Requests</p>
-                        <p className="summary-value">{emergencyStats.pending}</p>
-                    </div>
-                    <div className="summary-item">
-                        <p className="summary-label">Resolved Requests</p>
-                        <p className="summary-value">{emergencyStats.resolved}</p>
-                    </div>
-                </div>
+  // Build severity distribution by disaster type
+  const severityByDisasterType = useMemo(() => {
+    const map = {};
+    filteredData.forEach(({ type, severity }) => {
+      if (!map[type]) map[type] = { type, Low: 0, Moderate: 0, High: 0 };
+      if (severity < 4) map[type].Low++;
+      else if (severity < 7) map[type].Moderate++;
+      else map[type].High++;
+    });
+    return Object.values(map);
+  }, [filteredData]);
+
+  // ------------------ Mock Data Setup ------------------
+  useEffect(() => {
+    setDisasterTrends([
+      { date: "2025-03-10", type: "Flood", tweets: 120, severity: 6 },
+      { date: "2025-03-10", type: "Hurricane", tweets: 80, severity: 4 },
+      { date: "2025-03-11", type: "Flood", tweets: 150, severity: 7 },
+      { date: "2025-03-11", type: "Hurricane", tweets: 90, severity: 5 },
+      { date: "2025-03-12", type: "Flood", tweets: 200, severity: 8 },
+      { date: "2025-03-12", type: "Hurricane", tweets: 150, severity: 6 },
+      { date: "2025-03-13", type: "Flood", tweets: 250, severity: 9 },
+      { date: "2025-03-13", type: "Hurricane", tweets: 170, severity: 7 },
+    ]);
+
+    setAffectedLocations([
+      { location: "Florida", tweets: 950, avgSeverity: 7, topDisaster: "Hurricane" },
+      { location: "Texas", tweets: 800, avgSeverity: 4, topDisaster: "Flood" },
+      { location: "Maine", tweets: 620, avgSeverity: 2, topDisaster: "Flood" },
+      { location: "Georgia", tweets: 400, avgSeverity: 5, topDisaster: "Hurricane" },
+    ]);
+
+    setEmergencyStats({
+      totalRequests: 150,
+      pending: 45,
+      resolved: 105,
+    });
+
+    setKPIStats({
+      totalDisasters: 2050,
+      activeDisasters: ["Flood", "Earthquake"],
+      tweetsLast24h: 670,
+      avgSeverity: 6.3,
+    });
+  }, []);
+
+  // ------------------ Dashboard ------------------
+
+  return (
+    <div className="analytics-container">
+      <h1 className="title2">Disaster Analytics Dashboard</h1>
+      <KPICarousel kpiStats={kpiStats} emergencyStats={emergencyStats} />
+
+      {/* ------------------ Filter Section ------------------ */}
+      <div className="filter-card">
+        <div className="filter-header"><h2>Filter Data</h2></div>
+        <div className="filter-group">
+          {/* Disaster Type */}
+          <div className="filter-item">
+            <label>Disaster Type</label>
+            <Select
+              isMulti
+              options={["Flood", "Earthquake", "Hurricane", "Tornado", "Fire", "Other"].map(v => ({ value: v, label: v }))}
+              value={selectedTypes.map((type) => ({ value: type, label: type }))}
+              onChange={(selected) => setSelectedTypes(selected.map((s) => s.value))}
+              className="custom-select"
+            />
+          </div>
+
+          {/* Date Range */}
+          <div className="filter-item full-width">
+            <label>Date Range</label>
+            <div className="date-range-row">
+              <input type="date" value={dateRange.from} onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })} />
+              <input type="date" value={dateRange.to} onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })} />
             </div>
+          </div>
 
-            <div className="analytics-grid">
-                {/* Disaster Trends Over Time */}
-                <div className="chart-container">
-                    <h2>Disaster Trends Over Time</h2>
-                    <p className="chart-description">
-                        This graph shows the number of disaster-related tweets over time, helping to track crisis frequency.
-                    </p>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={disasterTrends}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                                dataKey="date" 
-                                label={{ value: "Date", position: "insideBottom", dy: 10 }} 
-                            />
-                            <YAxis 
-                                label={{ value: "Tweet Volume", angle: -90, position: "insideCenter", dx: -25}} 
-                            />
-                            <Tooltip />
-                            <Line type="monotone" dataKey="tweets" stroke="#2A5DB0" strokeWidth={2} name="" /> 
-                        </LineChart>
-                    </ResponsiveContainer>
-                </div>
-
-                {/* Disaster Type Breakdown */}
-                <div className="chart-container">
-                    <h2>Disaster Type Breakdown</h2>
-                    <p className="chart-description">
-                        This pie chart displays the distribution of disaster types reported.
-                    </p>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                        <Pie
-                            data={disasterTypes}
-                            dataKey="value"
-                            nameKey="name"
-                            cx="50%" cy="50%"
-                            outerRadius={100}
-                            label
-                        >
-                            {disasterTypes.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                            <Legend />
-                            <Tooltip />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-
-                {/* Most Affected Locations */}
-                <div className="chart-container">
-                    <h2>Most Affected Locations</h2>
-                    <p className="chart-description">
-                        This chart ranks the most affected locations based on tweet volume.
-                    </p>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={affectedLocations} layout="vertical">
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" />
-                            <YAxis dataKey="location" type="category" />
-                            <Tooltip />
-                            <Bar dataKey="tweets">
-                            {affectedLocations.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-
-                {/* Severity Distribution */}
-                <div className="chart-container">
-                    <h2>Severity Distribution</h2>
-                    <p className="chart-description">
-                        This graph categorizes reported disasters based on severity.
-                    </p>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={severityDistribution}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="severity" />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="count" fill="#007BFF" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
+          {/* Minimum Severity */}
+          <div className="filter-item full-width">
+            <label>Minimum Severity: <strong>{severityThreshold}</strong></label>
+            <Slider
+              min={0}
+              max={10}
+              step={1}
+              value={severityThreshold}
+              onChange={(value) => setSeverityThreshold(value)}
+              trackStyle={{ backgroundColor: "#2A5DB0" }}
+              handleStyle={{ borderColor: "#2A5DB0" }}
+            />
+          </div>
         </div>
-    );
+
+        {/* Reset */}
+        <div className="filter-actions">
+          <button
+            className="reset-btn"
+            onClick={() => {
+              setSelectedTypes([]);
+              setDateRange({ from: "", to: "" });
+              setSeverityThreshold(0);
+            }}
+          >
+            Reset Filters
+          </button>
+        </div>
+      </div>
+
+      {/* ------------------ Charts Section ------------------ */}
+      <div className="analytics-grid">
+        {/* Chart 1: Disaster Trends */}
+        <ChartWrapper title="Disaster Trends Over Time" description="Tracks disaster-related tweet volume by type over time.">
+          {selectedTypes.length > 0 && groupedLineChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={groupedLineChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {selectedTypes.map((type, i) => (
+                  <Line key={type} dataKey={type} stroke={COLORS[i % COLORS.length]} strokeWidth={2} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          ) : <NoDataMessage />}
+        </ChartWrapper>
+
+        {/* Chart 2: Disaster Type Breakdown */}
+        <ChartWrapper title="Disaster Type Breakdown" description="Stacked bars show tweet counts by type per day.">
+          {selectedTypes.length > 0 && groupedLineChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={groupedLineChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {selectedTypes.map((type, i) => (
+                  <Bar key={type} dataKey={type} stackId="a" fill={COLORS[i % COLORS.length]} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <NoDataMessage />}
+        </ChartWrapper>
+
+        {/* Chart 3: Top Affected Locations */}
+        <ChartWrapper title="Top Affected Locations" description="Tweet volume with severity-based color and top disaster.">
+          {selectedTypes.length > 0 && filteredAffectedLocations.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={filteredAffectedLocations} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis dataKey="location" type="category" />
+                <Tooltip content={({ active, payload, label }) => {
+                  if (active && payload?.length) {
+                    const d = payload[0].payload;
+                    return (
+                      <div className="custom-tooltip">
+                        <p><strong>{label}</strong></p>
+                        <p>Top Disaster: {d.topDisaster}</p>
+                        <p>Tweet Count: {d.tweets}</p>
+                        <p>Avg. Severity: {d.avgSeverity}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }} />
+                <Bar dataKey="tweets">
+                  {filteredAffectedLocations.map((entry, i) => {
+                    let fill = "#66CC66";
+                    if (entry.avgSeverity >= 7) fill = "#FF6666";
+                    else if (entry.avgSeverity >= 4) fill = "#FFCC33";
+                    return <Cell key={i} fill={fill} />;
+                  })}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <NoDataMessage />}
+        </ChartWrapper>
+
+        {/* Chart 4: Severity Distribution */}
+        <ChartWrapper title="Severity Distribution" description="Stacked bars show tweet severity levels per disaster type.">
+          {selectedTypes.length > 0 && severityByDisasterType.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={severityByDisasterType}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="type" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="Low" stackId="a" fill="#66CC66" />
+                <Bar dataKey="Moderate" stackId="a" fill="#FFCC33" />
+                <Bar dataKey="High" stackId="a" fill="#FF6666" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : <NoDataMessage />}
+        </ChartWrapper>
+      </div>
+    </div>
+  );
 };
+
+// ------------------ Reusable Components ------------------
+
+const ChartWrapper = ({ title, description, children }) => (
+  <div className="chart-container">
+    <h2>{title}</h2>
+    <p className="chart-description">{description}</p>
+    {children}
+  </div>
+);
+
+const NoDataMessage = () => (
+  <p style={{ paddingTop: "20px", color: "#999", textAlign: "center" }}>
+    Please select disaster types and filters to display data.
+  </p>
+);
 
 export default Analytics;
