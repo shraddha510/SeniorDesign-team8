@@ -10,9 +10,11 @@ import pandas as pd
 import requests
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from supabase import create_client, Client
+from dotenv import load_dotenv
 
-SUPABASE_URL = "https://opehiyxkmvneeggatqoj.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZWhpeXhrbXZuZWVnZ2F0cW9qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczOTY3NDI2MywiZXhwIjoyMDU1MjUwMjYzfQ.3QMqqKAop6L2tLUp51lXe-2XRnycY7yTzPK7rgWEAyk"
+load_dotenv()
+SUPABASE_URL =  os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
