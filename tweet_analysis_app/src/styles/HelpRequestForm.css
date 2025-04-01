@@ -129,4 +129,31 @@ input:focus, select:focus, textarea:focus {
   .submit-button, .cancel-button {
     width: 100%;
   }
+}
+
+.submission-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #dc3545;
+}
+
+.submission-error p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled,
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+button.submit-button:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
 } 

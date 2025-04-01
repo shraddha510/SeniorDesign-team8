@@ -12,19 +12,16 @@ const HelpRequestForm = () => {
     location: '',
     contactInfo: '',
     emergencyType: '',
+    otherEmergencyDetails: '',
     description: '',
   });
 
   const [errors, setErrors] = useState({
-    location: '',
     contactInfo: ''
   });
 
-  const validateLocation = (location) => {
-    // Check for format like "123 Main St, Springfield, IL"
-    const locationRegex = /^[\w\s\d\-\.,]+,\s[\w\s\d\-\.]+,\s[A-Z]{2}$/;
-    return locationRegex.test(location);
-  };
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const validateContactInfo = (contactInfo) => {
     // Check for format like "555-123-4567"
@@ -34,13 +31,15 @@ const HelpRequestForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       [name]: value,
-    });
+      // Clear otherEmergencyDetails if emergencyType is changed from 'other'
+      ...(name === 'emergencyType' && value !== 'other' && { otherEmergencyDetails: '' }),
+    }));
 
-    // Clear errors when user types
-    if (name === 'location' || name === 'contactInfo') {
+    // Clear contactInfo error when user types
+    if (name === 'contactInfo') {
       setErrors({
         ...errors,
         [name]: ''
@@ -48,28 +47,44 @@ const HelpRequestForm = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate location and contact info
-    const locationValid = validateLocation(formData.location);
+    // Validate contact info
     const contactValid = validateContactInfo(formData.contactInfo);
     
     // If validation fails, set errors and prevent form submission
-    if (!locationValid || !contactValid) {
+    if (!contactValid || (formData.emergencyType === 'other' && !formData.otherEmergencyDetails)) {
       setErrors({
-        location: locationValid ? '' : 'Please enter location in format: 123 Main St, Springfield, IL',
         contactInfo: contactValid ? '' : 'Please enter phone in format: 555-123-4567'
       });
+       if (formData.emergencyType === 'other' && !formData.otherEmergencyDetails) {
+         alert('Please specify the type of emergency when selecting "Other".');
+       }
       return;
     }
-    
-    // Add the help request to the context
-    addHelpRequest(formData);
-    
-    // Show success message and redirect
-    alert('Your help request has been submitted. Emergency services have been notified.');
-    navigate('/');
+
+    try {
+      setSubmitting(true);
+      setSubmitError(null);
+      
+      // Add the help request to the context (now it's async)
+      const result = await addHelpRequest(formData);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to submit help request');
+      }
+      
+      // Show success message and redirect
+      alert(`Your help request has been submitted with ${result.confidenceScore} confidence score. Emergency services have been notified.`);
+      navigate('/');
+      
+    } catch (error) {
+      console.error('Error submitting help request:', error);
+      setSubmitError(error.message || 'An error occurred. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -81,6 +96,12 @@ const HelpRequestForm = () => {
       <h1>Emergency Assistance Request</h1>
       <p>Please fill out this form with your information and details about your emergency situation.</p>
       
+      {submitError && (
+        <div className="submission-error">
+          <p>{submitError}</p>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit} className="help-request-form">
         <div className="form-group">
           <label htmlFor="name">Full Name</label>
@@ -91,6 +112,7 @@ const HelpRequestForm = () => {
             value={formData.name}
             onChange={handleChange}
             required
+            disabled={submitting}
           />
         </div>
         
@@ -103,16 +125,15 @@ const HelpRequestForm = () => {
             value={formData.location}
             onChange={handleChange}
             required
-            placeholder="123 Main St, Springfield, IL"
-            className={errors.location ? 'input-error' : ''}
+            placeholder="Street Address, City, Region/State, Postal Code, Country"
+            disabled={submitting}
           />
-          {errors.location && <div className="error-message">{errors.location}</div>}
         </div>
         
         <div className="form-group">
-          <label htmlFor="contactInfo">Contact Information</label>
+          <label htmlFor="contactInfo">Contact Information (Phone)</label> 
           <input
-            type="text"
+            type="tel"
             id="contactInfo"
             name="contactInfo"
             value={formData.contactInfo}
@@ -120,6 +141,7 @@ const HelpRequestForm = () => {
             required
             placeholder="555-123-4567"
             className={errors.contactInfo ? 'input-error' : ''}
+            disabled={submitting}
           />
           {errors.contactInfo && <div className="error-message">{errors.contactInfo}</div>}
         </div>
@@ -132,6 +154,7 @@ const HelpRequestForm = () => {
             value={formData.emergencyType}
             onChange={handleChange}
             required
+            disabled={submitting}
           >
             <option value="">Select emergency type</option>
             <option value="flood">Flood 🌊</option>
@@ -139,9 +162,25 @@ const HelpRequestForm = () => {
             <option value="earthquake">Earthquake 🏚️</option>
             <option value="hurricane">Hurricane 🌀</option>
             <option value="tornado">Tornado 🌪️</option>
-            <option value="other">Other</option>
+            <option value="other">Other</option> 
           </select>
         </div>
+
+        {formData.emergencyType === 'other' && (
+          <div className="form-group">
+            <label htmlFor="otherEmergencyDetails">Please specify emergency</label>
+            <input
+              type="text"
+              id="otherEmergencyDetails"
+              name="otherEmergencyDetails"
+              value={formData.otherEmergencyDetails}
+              onChange={handleChange}
+              required
+              placeholder="Describe the type of emergency"
+              disabled={submitting}
+            />
+          </div>
+        )}
         
         <div className="form-group">
           <label htmlFor="description">Description of Situation</label>
@@ -153,15 +192,25 @@ const HelpRequestForm = () => {
             required
             rows="5"
             placeholder="Please describe your emergency situation and any specific needs..."
+            disabled={submitting}
           ></textarea>
         </div>
         
         <div className="form-actions">
-          <button type="button" className="cancel-button" onClick={handleCancel}>
+          <button 
+            type="button" 
+            className="cancel-button" 
+            onClick={handleCancel}
+            disabled={submitting}
+          >
             Cancel
           </button>
-          <button type="submit" className="submit-button">
-            Submit Request
+          <button 
+            type="submit" 
+            className="submit-button"
+            disabled={submitting}
+          >
+            {submitting ? 'Submitting...' : 'Submit Request'}
           </button>
         </div>
       </form>

@@ -3,7 +3,7 @@ import '../styles/FirstResponderDashboard.css';
 import { useHelpRequests } from '../context/HelpRequestContext';
 
 const FirstResponderDashboard = () => {
-  const { helpRequests, updateHelpRequestStatus } = useHelpRequests();
+  const { helpRequests, updateHelpRequestStatus, loading, error } = useHelpRequests();
   const [filters, setFilters] = useState({
     status: 'all',
     emergencyType: 'all',
@@ -39,8 +39,8 @@ const FirstResponderDashboard = () => {
 
   const filteredRequests = helpRequests.filter(request => {
     const matchesStatus = filters.status === 'all' || request.status === filters.status;
-    const matchesEmergencyType = filters.emergencyType === 'all' || request.emergencyType === filters.emergencyType;
-    const matchesTimeFrame = getTimeFrameFilter(filters.timeFrame, request.timestamp);
+    const matchesEmergencyType = filters.emergencyType === 'all' || request.emergency_type === filters.emergencyType;
+    const matchesTimeFrame = getTimeFrameFilter(filters.timeFrame, request.created_at);
     
     return matchesStatus && matchesEmergencyType && matchesTimeFrame;
   });
@@ -74,6 +74,48 @@ const FirstResponderDashboard = () => {
         return '⚠️';
     }
   };
+
+  const getConfidenceScoreBadge = (score) => {
+    let badgeClass = 'confidence-badge';
+    
+    switch(score) {
+      case 'Low':
+        badgeClass += ' confidence-low';
+        break;
+      case 'Medium':
+        badgeClass += ' confidence-medium';
+        break;
+      case 'High':
+        badgeClass += ' confidence-high';
+        break;
+      default:
+        badgeClass += ' confidence-unknown';
+    }
+    
+    return (
+      <span className={badgeClass}>
+        {score || 'Unknown'} Confidence
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="first-responder-dashboard-container">
+        <h1>First Responder Dashboard</h1>
+        <div className="loading-indicator">Loading help requests...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="first-responder-dashboard-container">
+        <h1>First Responder Dashboard</h1>
+        <div className="error-message">Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="first-responder-dashboard-container">
@@ -150,8 +192,13 @@ const FirstResponderDashboard = () => {
               {filteredRequests.map(request => (
                 <div key={request.id} className="help-request-card">
                   <div className="request-header">
-                    <span className="emergency-icon">{getEmergencyTypeIcon(request.emergencyType)}</span>
-                    <h3>{request.emergencyType.charAt(0).toUpperCase() + request.emergencyType.slice(1)} Emergency</h3>
+                    <span className="emergency-icon">{getEmergencyTypeIcon(request.emergency_type)}</span>
+                    <h3>
+                      {request.emergency_type === 'other' && request.other_emergency_details
+                        ? request.other_emergency_details.charAt(0).toUpperCase() + request.other_emergency_details.slice(1)
+                        : request.emergency_type.charAt(0).toUpperCase() + request.emergency_type.slice(1)} Emergency
+                    </h3>
+                    {getConfidenceScoreBadge(request.confidence_score)}
                     <select 
                       className={getStatusDropdownClass(request.status)}
                       value={request.status}
@@ -166,8 +213,8 @@ const FirstResponderDashboard = () => {
                   <div className="request-details">
                     <p><strong>Name:</strong> {request.name}</p>
                     <p><strong>Location:</strong> {request.location}</p>
-                    <p><strong>Contact:</strong> {request.contactInfo}</p>
-                    <p><strong>Time Reported:</strong> {new Date(request.timestamp).toLocaleString()}</p>
+                    <p><strong>Contact:</strong> {request.contact_info}</p>
+                    <p><strong>Time Reported:</strong> {new Date(request.created_at).toLocaleString()}</p>
                     <p><strong>Description:</strong> {request.description}</p>
                   </div>
                 </div>
