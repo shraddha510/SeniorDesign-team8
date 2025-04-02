@@ -1,6 +1,5 @@
 .recent-watch {
     background: #24548d;
-    border-radius: 50px;
     padding: 20px 20px;
     display: flex;
     flex-direction: column;
@@ -13,15 +12,13 @@
 
 .title {
     color: #ffffff;
-    /*font-family: "Inter-Bold", sans-serif;*/
     font-size: 48px;
     font-weight: 600;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .description {
     color: #ffffff;
-    /*font-family: "Inter-Medium", sans-serif;*/
     font-size: 18px;
     font-weight: 200;
 }
