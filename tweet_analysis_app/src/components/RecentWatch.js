@@ -43,6 +43,12 @@ export const RecentWatch = ({className}) => {
         return matchesDisaster && matchesSeverity && matchesCity;
     });
 
+    const resetFilters = () => {
+        setSelectedDisaster(null);
+        setSelectedSeverityRange(null);
+        setSelectedCity('');
+    };
+
     return (
         <div className={"recent-watch " + (className || "")}>
             <div className="title">Recent Watch</div>
@@ -56,18 +62,18 @@ export const RecentWatch = ({className}) => {
                     className="bluesky-logo"
                     src="/bluesky_logo.png"
                     alt={"bluesky logo mini"}/>
-                <div className="post-button-text">Post to your community</div>
+                <div className="tweet-button-text">Post to your community</div>
             </button>
 
             <div className="filter-container">
                 <div className="filter-section">
-                    <label htmlFor="disasterFilter">Disaster Type:</label>
+                    <label htmlFor="disasterFilter">Disaster Type</label>
                     <select
                         id="disasterFilter"
                         value={selectedDisaster !== null ? selectedDisaster : ''}
                         onChange={(e) => setSelectedDisaster(e.target.value || null)}
                     >
-                        <option value="">Select a disaster type</option>
+                        <option value="">Select</option>
                         {[...new Set(tweets.map(tweet => tweet.disaster_type.toLowerCase()))] // Getting unique disaster types in lowercase
                             .map(disasterType => (
                                 <option key={disasterType} value={disasterType}>{disasterType}</option>))}
@@ -75,7 +81,7 @@ export const RecentWatch = ({className}) => {
                 </div>
 
                 <div className="filter-section">
-                    <label htmlFor="severityFilter">Severity Score:</label>
+                    <label htmlFor="severityFilter">Severity Score</label>
                     <select
                         id="severityFilter"
                         value={selectedSeverityRange !== null ? selectedSeverityRange.label : ''}
@@ -84,7 +90,7 @@ export const RecentWatch = ({className}) => {
                             setSelectedSeverityRange(selectedRange || null);
                         }}
                     >
-                        <option value="">Select a severity score range</option>
+                        <option value="">Select</option>
                         {severityRanges.map(range => (
                             <option key={range.label} value={range.label}>{range.label}</option>
                         ))}
@@ -92,15 +98,17 @@ export const RecentWatch = ({className}) => {
                 </div>
 
                 <div className="filter-section">
-                    <label htmlFor="cityFilter">City, State:</label>
+                    <label htmlFor="cityFilter">Location</label>
                     <input
                         id="cityFilter"
                         type="text"
-                        placeholder="Location (e.g., Los Angeles)"
+                        placeholder="e.g., Houston"
                         value={selectedCity}
                         onChange={(e) => setSelectedCity(e.target.value)}
                     />
                 </div>
+
+                <button className="reset-button" onClick={resetFilters}>Reset Filters</button>
             </div>
 
             <div className="tweet-cards">

@@ -24,8 +24,6 @@ const Navbar = () => {
           <ul className="nav-links">
             <li><a href="/" onClick={(e) => { e.preventDefault(); handleHomeNavigation(); }}>Home</a></li>
             <li><a href="/analytics" onClick={(e) => {handleAnalyticsNavigation(); }}>Analytics</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
           </ul>
           <div className="nav-buttons">
             <button className="request responder-btn" onClick={handleFirstResponderView}>
