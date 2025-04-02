@@ -12,13 +12,13 @@ export const RecentWatch = ({className}) => {
         const fetchTweets = async () => {
             const {data, error} = await supabase
                 .from('gen_ai_output')
-                .select('tweet_text, disaster_type, location, severity_score')
+                .select('tweet_text, disaster_type, location, severity_score, timestamp')
                 .eq('genuine_disaster', true) // Only fetch tweets where genuine_disaster is TRUE
                 .order('timestamp', {ascending: false});
 
             if (error) {
                 console.error('Error fetching tweets:', error);
-                setTweets(null)
+                setTweets(null);
             } else {
                 console.log('Fetched data:', data);
                 setTweets(data);
@@ -128,6 +128,9 @@ export const RecentWatch = ({className}) => {
                             <p className="tweet-info">
                                 <span className="tweet-location">{tweet.location}</span> - {tweet.disaster_type}
                                 <span className="tweet-severity"> (Score: {tweet.severity_score})</span>
+                                <br/>
+                                <span
+                                    className="tweet-timestamp"> Last updated: {tweet.timestamp ? new Date(tweet.timestamp).toLocaleString() : 'Unknown'}</span>
                             </p>
                         </div>
                     );
