@@ -1,9 +1,38 @@
 from pydantic import BaseModel, Field
 from llm import OllamaClient, Model
 import csv
+from supabase import create_client, Client
+import pandas as pd
+import requests
+import time
+import re
 
 llm = Model.LLAMA_3_2
 client = OllamaClient(llm)
+
+def get_location_data(city_name):
+    url = f"https://geocode.xyz/{city_name}?json=1"
+    response = requests.get(url)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        return f"Error: {response.status_code}"
+
+SUPABASE_URL = "https://opehiyxkmvneeggatqoj.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZWhpeXhrbXZuZWVnZ2F0cW9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2NzQyNjMsImV4cCI6MjA1NTI1MDI2M30.MszUsOz_eOOEE0Ldg-6_uh3zPmZoF32t5JHK1a9WhiA"
+
+# Initialize Supabase client
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+response = supabase.table("bluesky_api_data").select("*").execute()
+
+data = response.data
+df = pd.DataFrame(data)
+
+df.to_csv("test.csv", index=False)
 
 with open("test.csv", "r") as csvfile:
     csv_reader = csv.reader(csvfile)
@@ -25,14 +54,40 @@ for i in range(1, len(tweet_list)):
     class ClassifyDisaster(BaseModel):
         genuine_disaster: bool
 
-    prompt0 = (
-        "You are a social media analyst who is an expert on natural disaster recovery."
-        "\nDetermine whether the following tweet genuinely reports an ongoing or recent natural disaster."
-        "\n-If the tweet provides specific details about an event such as warnings, location, impact, emergency response, and information on disasters, classify it as True."
-        "\n-If the tweet uses exaggeration, humor, or metaphorical language (e.g., 'This traffic is a total tornado'), classify it as False."
-        "\n-Use linguistic cues, context, and common patterns found in real-time disaster reporting."
-        f"\n\nTweet: {tweet_text}"
-    )
+    prompt0 = f"""
+    You are a social media analyst who is an expert on natural disaster recovery.  
+    Determine whether the following tweet genuinely reports an ongoing or recent natural disaster.  
+    
+    ### Classification Rules:  
+    ✅ **Classify as True** if the tweet:  
+    - Provides specific details about an ongoing or recent disaster, including locations, victims, warnings, emergency response, aid efforts, or official updates.  
+    - Is a news headline or report about a real disaster, even if it doesn't contain personal narratives.  
+    - Mentions verifiable entities (e.g., government officials, emergency agencies) discussing disaster impact or response.  
+    
+    ❌ **Classify as False** if the tweet:  
+    - Uses metaphorical language (e.g., “This traffic is a tornado”).  
+    - Mentions a disaster in a non-literal way, such as referencing past events without new developments.  
+    - Is purely emotional, symbolic, or does not provide any verifiable disaster-related information. 
+
+    ### Examples: 
+
+    1. **Tweet:** "California wildfires: winds die down, helping containment efforts https://t.co/3asXQsQZgM https://t.co/b89SKa3Tuw"  
+       **Output:** True ✅ *(Specific disaster details, containment efforts mentioned)*  
+    
+    2. **Tweet:** "Flood Death rate increases in Sri Lanka has been published on Liveonchennai - https://t.co/GmM2ENO8Mb https://t.co/WYe0eGoZlw"  
+       **Output:** True ✅ *(Verifiable disaster impact—death toll rising)* 
+
+    3. **Tweet:** "Blue heart yellow heart please help flood social media with this message"  
+       **Output:** False ❌ *(No disaster details—just symbolic language)* 
+    
+    4. **Tweet:** "the day over and the adrenaline of a job well done flooding their bodies and minds the sisters celebrate"  
+       **Output:** False ❌ *(No disaster details—just symbolic language)* 
+    
+    ### Final Classification Task:  
+    Now, classify the following tweet:  
+    **Tweet:** "{tweet_text}"  
+    **Output:** (True/False)
+    """
 
     genuine_response = client.generate_json(
         prompt=prompt0,
@@ -131,3 +186,42 @@ for i in range(1, len(tweet_list)):
                 writer = csv.writer(file)
                 writer.writerow(row)
                 file.close()
+
+with open("output.csv", "r") as csvfile:
+    csv_reader = csv.reader(csvfile)
+    tweet_list = [list(row) for row in csv_reader]
+    tweet_list[0].extend(["Latitude", "Longitude"])
+
+for i in range(1, len(tweet_list)):
+    location = tweet_list[i][5]
+    print(location)
+    
+    if location != "None" and location.lower() != "not specified":
+        location_data = get_location_data(location)
+
+        if location_data.get('code') != '018':
+            latitude = location_data.get('latt', 'None')
+            longitude = location_data.get('longt', 'None')
+        if latitude == "None":
+            location_parts = re.split(r", | and ", location)
+            first_item = location_parts[0]
+            last_item = location_parts[-1]
+            first_location_data = get_location_data(first_item)
+            last_location_data = get_location_data(last_item)
+
+            if first_location_data.get('code') != '018':
+                latitude = first_location_data.get('latt', 'None')
+                longitude = first_location_data.get('longt', 'None')
+            elif last_location_data.get('code') != '018' and latitude == "None":
+                latitude = last_location_data.get('latt', 'None')
+                longitude = last_location_data.get('longt', 'None')
+        print(f"Location: {location}, Latitude: {latitude}, Longitude: {longitude}\n")
+
+        tweet_list[i].extend([latitude, longitude])
+        time.sleep(2)
+
+with open("output.csv", "w", newline="", encoding="utf-8") as csvfile:
+    csv_writer = csv.writer(csvfile)
+    csv_writer.writerows(tweet_list)
+
+print("CSV file updated successfully!")
