@@ -1,4 +1,4 @@
-Tweet ID,Timestamp,Tweet,Genuine Disaster,Disaster Type,Location,Severity Score,Latitude,Longitude
+tweet_id,timestamp,tweet_text,genuine_disaster,disaster_type,location,severity_score,latitude,longitude
 7473442,2025-02-26 19:39:02,"globe_showing_europeafrica  earthquake alert globe_showing_europeafrica 
 round_pushpin  location dodecanese islands greece
 straight_ruler  magnitude ml 33
