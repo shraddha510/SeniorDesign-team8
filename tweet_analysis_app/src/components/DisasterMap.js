@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import disasterData from './Example_Disaster_Data';
+import { supabase } from '../supabase';
+import '../styles/DisasterMap.css';
 
 function HeatmapLayer({ disasters }) {
     const map = useMap();
-    const [heatLayer, setHeatLayer] = React.useState(null);
+    const [heatLayer, setHeatLayer] = useState(null);
     const infoControlRef = React.useRef(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!map) return;
 
         const InfoControl = L.Control.extend({
@@ -36,27 +37,21 @@ function HeatmapLayer({ disasters }) {
     }, [map]);
 
     const points = disasters.map(disaster => {
-        const intensity = disaster.score > 7 ? 1.0 :
-            disaster.score > 5 ? 0.7 :
-                disaster.score > 3 ? 0.4 : 0.2;
+        const intensity = disaster.severity_score > 7 ? 1.0 :
+            disaster.severity_score > 5 ? 0.7 :
+                disaster.severity_score > 3 ? 0.4 : 0.2;
 
-        return [
-            disaster.latitude,
-            disaster.longitude,
-            intensity
-        ];
+        return [disaster.latitude, disaster.longitude, intensity];
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!map || !L.heatLayer) {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js';
             script.async = true;
             script.onload = () => createHeatmap();
             document.body.appendChild(script);
-            return () => {
-                document.body.removeChild(script);
-            };
+            return () => document.body.removeChild(script);
         } else {
             createHeatmap();
         }
@@ -99,10 +94,9 @@ function HeatmapLayer({ disasters }) {
                 if (container) {
                     if (closestDisaster) {
                         container.innerHTML = `
-                            <h4>${closestDisaster.name}</h4>
-                            <p class="popup-detail"><strong>Disaster Type:</strong> ${closestDisaster.disasterType}</p>
-                            <p class="popup-detail"><strong>Severity:</strong> ${closestDisaster.severity}</p>
-                            <p class="popup-detail"><strong>Risk Score:</strong> ${closestDisaster.score}/10</p>
+                            <h4>${closestDisaster.disaster_type || 'Unknown Disaster'}</h4>
+                            <p class="popup-detail"><strong>Severity:</strong> ${closestDisaster.severity_score || 'Unknown'}/10</p>
+                            <p class="popup-detail"><strong>Location:</strong> ${closestDisaster.location || 'Unknown'}</p>
                         `;
                     } else {
                         container.innerHTML = `
@@ -124,6 +118,39 @@ function HeatmapLayer({ disasters }) {
 }
 
 const DisasterMap = () => {
+    const [disasters, setDisasters] = useState([]);
+
+    useEffect(() => {
+        const fetchDisasterData = async () => {
+            const { data, error } = await supabase
+                .from('gen_ai_output')
+                .select('disaster_type, location, severity_score, latitude, longitude');
+
+            if (error) {
+                console.error('Error fetching data:', error);
+                return;
+            }
+
+            const formattedData = data
+                .map(disaster => ({
+                    ...disaster,
+                    severity_score: parseFloat(disaster.severity_score) || 0,
+                    latitude: parseFloat(disaster.latitude),
+                    longitude: parseFloat(disaster.longitude)
+                }))
+                .filter(disaster =>
+                    !isNaN(disaster.latitude) &&
+                    !isNaN(disaster.longitude) &&
+                    disaster.latitude !== null &&
+                    disaster.longitude !== null
+                );
+
+            setDisasters(formattedData);
+        };
+
+        fetchDisasterData();
+    }, []);
+
     return (
         <div className="map-container">
             <h2 className="map-title">US Disaster Risk Heatmap</h2>
@@ -136,7 +163,7 @@ const DisasterMap = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-                <HeatmapLayer disasters={disasterData} />
+                <HeatmapLayer disasters={disasters} />
             </MapContainer>
 
             <div className="map-legend">
@@ -148,66 +175,6 @@ const DisasterMap = () => {
                 </div>
                 <p className="legend-tip">Move your cursor over colored areas to see disaster details</p>
             </div>
-
-            <style jsx>{`
-                .map-container {
-                    padding: 20px;
-                    margin-top: 10px;
-                }
-                .map-title {
-                    text-align: center;
-                    font-size: 25px;
-                    margin-bottom: 20px;
-                    color: #0A2A4A;
-                }
-                .map-legend {
-                    background: white;
-                    border-radius: 8px;
-                    padding: 15px;
-                    margin-top: 30px;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                    font-family: 'Inter', sans-serif;
-                }
-                .gradient-bar {
-                    background: linear-gradient(to right, #3498db, #2ecc71, #f1c40f, #e67e22, #e74c3c);
-                    height: 20px;
-                    width: 100%;
-                    margin-bottom: 10px;
-                }
-                .legend-labels {
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 12px;
-                    font-weight: bold;
-                    margin-top: 5px;
-                }
-                .legend-tip {
-                    font-size: 12px;
-                    font-style: italic;
-                    color: #555;
-                    margin-top: 10px;
-                    text-align: center;
-                }
-                .disaster-popup {
-                    background: rgba(255, 255, 255, 0.95);
-                    padding: 14px;
-                    padding-top: 10px;
-                    border-radius: 10px;
-                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                    font-size: 14px;
-                    width: 250px;
-                }
-                .popup-detail {
-                    font-size: 13px;
-                    color: #333;
-                    margin: 4px 0;
-                }
-                .popup-subtext {
-                    font-size: 12px;
-                    color: #666;
-                    font-style: italic;
-                }
-            `}</style>
         </div>
     );
 };
