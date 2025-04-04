@@ -205,18 +205,19 @@ def save_data(data):
 # Upload CSV file to Supabase 
 def upload_to_supabase(csv_path):
     df = pd.read_csv(csv_path)
+    df = df.fillna("")
 
-    # Convert DataFrame to a list of dictionaries (records)
     records = df.to_dict(orient="records")
 
     for record in records:
         try:
-            # Insert each record into the 'bluesky_api_data' table
-            response = supabase.table("bluesky_api_data").insert(record).execute()
-            if response.get('error'):
-                print(f"Error inserting record: {response['error']}")
+            clean_record = {k: ("" if pd.isna(v) else v) for k, v in record.items()}
+            response = supabase.table("bluesky_api_data").upsert(clean_record, on_conflict="tweet_id").execute()
+
+            if response.status_code != 201:  # 201 Created is expected
+                print(f"Insert failed for record {record.get('tweet_id', 'Unknown')}: {response.data}")
         except Exception as e:
-            print(f"Insert failed for record {record['tweet_id']}: {e}")
+            print(f"Insert failed for record {record.get('tweet_id', 'Unknown')}: {e}")
 
 # Main execution
 if __name__ == "__main__":
