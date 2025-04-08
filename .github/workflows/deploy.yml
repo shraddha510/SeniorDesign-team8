@@ -1,0 +1,86 @@
+# .github/workflows/deploy.yml
+
+name: Deploy Python Scripts to VM
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to the main branch
+  schedule:
+    # Run once a day at 00:00 UTC
+    # You can adjust the cron syntax as needed
+    # See: https://crontab.guru/
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} # Uses the username of the actor who initiated the workflow
+          password: ${{ secrets.GHCR_PAT }} # Use the PAT stored in secrets
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./SeniorDesign-team8 # Build context is the SeniorDesign-team8 directory
+          file: ./SeniorDesign-team8/Dockerfile # Path to the Dockerfile
+          push: true
+          tags: |
+            ghcr.io/shraddha510/SeniorDesign-team8/bluesky-scripts:latest
+            ghcr.io/shraddha510/SeniorDesign-team8/bluesky-scripts:${{ github.sha }}
+          # Build-args can be used to pass secrets during build time if needed, but runtime env vars are generally safer
+          # build-args: |
+          #  SOME_BUILD_ARG=value
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: VM_HOST # Replace with Anjali's VM's IP or hostname
+          username: VM_USERNAME # Replace with Anjali's SSH username for the VM
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }} # Use the private key stored in secrets
+          script: |
+            # Ensure script stops if any command fails
+            set -e
+
+            # Define image name and container name
+            IMAGE_NAME="ghcr.io/shraddha510/SeniorDesign-team8/bluesky-scripts:latest"
+            CONTAINER_NAME="bluesky-processor"
+
+            # Log in to GHCR (needed if the image is private or PAT has limited scope)
+            # Use the same PAT as the login action
+            echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Pull the latest image
+            docker pull $IMAGE_NAME
+
+            # Stop and remove the existing container if it exists
+            docker stop $CONTAINER_NAME || true
+            docker rm $CONTAINER_NAME || true
+
+            # Run the new container
+            # --network host: Allows the container to use the host's network stack (needed for localhost access to Ollama)
+            # -d: Run in detached mode
+            # --rm: Automatically remove the container when it exits (useful if it's a one-off task)
+            # -e: Pass secrets as environment variables
+            # NOTE: Adjust OLLAMA_URL if Ollama isn't running on localhost:11434 on the VM host
+            docker run --network host -d --rm --name $CONTAINER_NAME \
+              -e SUPABASE_URL='${{ secrets.SUPABASE_URL }}' \
+              -e SUPABASE_KEY='${{ secrets.SUPABASE_KEY }}' \
+              -e OLLAMA_URL='http://localhost:11434' \
+              $IMAGE_NAME
+
+            echo "Deployment script finished." 
