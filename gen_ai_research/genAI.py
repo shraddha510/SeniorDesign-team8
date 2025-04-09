@@ -1,25 +1,8 @@
-from pydantic import BaseModel, Field
-from llm import OllamaClient, Model
-import csv
-from supabase import create_client, Client
-import pandas as pd
 import requests
-import time
+from pydantic import BaseModel, Field
+from supabase import create_client, Client
 import re
-
-llm = Model.LLAMA_3_2
-client = OllamaClient(llm)
-
-def get_location_data(city_name):
-    url = f"https://geocode.xyz/{city_name}?json=1"
-    response = requests.get(url)
-    
-    # Check if the request was successful
-    if response.status_code == 200:
-        data = response.json()
-        return data
-    else:
-        return f"Error: {response.status_code}"
+from llm import OllamaClient, Model
 
 SUPABASE_URL = "https://opehiyxkmvneeggatqoj.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wZWhpeXhrbXZuZWVnZ2F0cW9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2NzQyNjMsImV4cCI6MjA1NTI1MDI2M30.MszUsOz_eOOEE0Ldg-6_uh3zPmZoF32t5JHK1a9WhiA"
@@ -27,32 +10,82 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 # Initialize Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+
+def push_to_supabase(data: dict):
+    """Push data to Supabase table, avoiding duplicates"""
+    try:
+        # Check if the record already exists based on tweet_id
+        existing_record = supabase.table("gen_ai_output").select("tweet_id").eq("tweet_id", data["tweet_id"]).execute()
+
+        if existing_record.data:
+            print(f"Duplicate record found for tweet_id: {data['tweet_id']}. Skipping insertion.")
+            return
+
+        # Insert the data if no duplicate is found
+        response = supabase.table("gen_ai_output").insert(data).execute()
+        if hasattr(response, "data") and response.data:
+            print("Insert successful:", response.data)
+        else:
+            print("Insert failed:", getattr(response, "error_message", "Unknown error"))
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+
+llm = Model.LLAMA_3_2
+client = OllamaClient(llm)
+
+
+def get_location_data(city_name):
+    url = f"https://geocode.xyz/{city_name}?json=1"
+    response = requests.get(url)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        return f"Error: {response.status_code}"
+
+
 response = supabase.table("bluesky_api_data").select("*").execute()
-
 data = response.data
-df = pd.DataFrame(data)
 
-df.to_csv("test.csv", index=False)
+for record in data[:20]:
+    tweet_id = record["tweet_id"]
+    timestamp = record["timestamp"]
+    tweet_text = record["tweet_text"]
 
-with open("test.csv", "r") as csvfile:
-    csv_reader = csv.reader(csvfile)
-    tweet_list = list(map(tuple, csv_reader))
+    location = record.get("location", None)
+    latitude = None
+    longitude = None
 
-header = ['Tweet ID', 'Timestamp', 'Tweet', 'Genuine Disaster', 'Disaster Type', 'Location', 'Severity Score']
+    if location and location.lower() != "none" and location.lower() != "not specified":
+        location_data = get_location_data(location)
 
-with open('output.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(header)
-    file.close()
+        if location_data.get("code") != "018":
+            latitude = location_data.get("latt", None)
+            longitude = location_data.get("longt", None)
 
+        if not latitude:
+            location_parts = re.split(r", | and ", location)
+            first_item = location_parts[0]
+            last_item = location_parts[-1]
+            first_location_data = get_location_data(first_item)
+            last_location_data = get_location_data(last_item)
 
-for i in range(1, len(tweet_list)):
-    tweet_id = tweet_list[i][0]
-    timestamp = tweet_list[i][1]
-    tweet_text = tweet_list[i][2]
+            if first_location_data.get("code") != "018":
+                latitude = first_location_data.get("latt", None)
+                longitude = first_location_data.get("longt", None)
+            elif last_location_data.get("code") != "018" and not latitude:
+                latitude = last_location_data.get("latt", None)
+                longitude = last_location_data.get("longt", None)
+
+        print(f"Location: {location}, Latitude: {latitude}, Longitude: {longitude}\n")
+
 
     class ClassifyDisaster(BaseModel):
         genuine_disaster: bool
+
 
     prompt0 = f"""
     You are a social media analyst who is an expert on natural disaster recovery.  
@@ -97,11 +130,18 @@ for i in range(1, len(tweet_list)):
     genuine = str(genuine_response[0]["arguments"]["genuine_disaster"])
 
     if genuine.lower() == "false":
-        row = [tweet_id, timestamp, tweet_text, genuine, 'None', 'None', 'None']
-        with open('output.csv', 'a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(row)
-            file.close()
+        data = {
+            "tweet_id": tweet_id,
+            "timestamp": timestamp,
+            "tweet_text": tweet_text,
+            "genuine_disaster": genuine,
+            "disaster_type": None,
+            "location": None,
+            "latitude": latitude,
+            "longitude": longitude,
+            "severity_score": None
+        }
+        push_to_supabase(data)
 
     if genuine.lower() == "true":
         prompt1 = (
@@ -116,9 +156,11 @@ for i in range(1, len(tweet_list)):
             "\nDo not make up facts. Only analyze based on the tweet text provided. "
         )
 
+
         class DisasterSchema(BaseModel):
             disaster_type: str = Field(..., min_length=1)
-            disaster_location: str = Field(..., min_length=1, description="Start with a capital letter")
+            location: str = Field(..., min_length=1, description="Start with a capital letter")
+
 
         response = client.generate_json(
             prompt=prompt1,
@@ -126,7 +168,8 @@ for i in range(1, len(tweet_list)):
         )
 
         disaster_type = str(response[0]["arguments"]["disaster_type"])
-        disaster_location = str(response[0]["arguments"]["disaster_location"])
+        location = str(response[0]["arguments"]["location"])
+
 
         class SeverityScoreSchema(BaseModel):
             daily_living_impact_justification: str = Field(..., min_length=1)
@@ -137,13 +180,21 @@ for i in range(1, len(tweet_list)):
             loss_of_life_score: int = Field(..., ge=0, le=10)
             emergency_response_justification: str = Field(..., min_length=1)
             emergency_response_score: int = Field(..., ge=0, le=10)
-        
+
+
         if disaster_type.lower() == "not specified":
-            row = [tweet_id, timestamp, tweet_text, genuine, disaster_type, disaster_location, 'None']
-            with open('output.csv', 'a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(row)
-                file.close()
+            data = {
+                "tweet_id": tweet_id,
+                "timestamp": timestamp,
+                "tweet_text": tweet_text,
+                "genuine_disaster": genuine,
+                "disaster_type": None,
+                "location": None,
+                "latitude": latitude,
+                "longitude": longitude,
+                "severity_score": None
+            }
+            push_to_supabase(data)
 
         if disaster_type.lower() != "not specified":
             prompt2 = (
@@ -169,59 +220,25 @@ for i in range(1, len(tweet_list)):
                 schema=SeverityScoreSchema,
             )
 
-            daily_living_score_str = str(response[0]["arguments"]["daily_living_impact_score"])
-            infrastructure_score_str = str(response[0]["arguments"]["infrastructure_impact_score"])
-            loss_of_life_score_str = str(response[0]["arguments"]["loss_of_life_score"])
-            emergency_response_score_str = str(response[0]["arguments"]["emergency_response_score"])
+            daily_living_score = int(response[0]["arguments"]["daily_living_impact_score"])
+            infrastructure_score = int(response[0]["arguments"]["infrastructure_impact_score"])
+            loss_of_life_score = int(response[0]["arguments"]["loss_of_life_score"])
+            emergency_response_score = int(response[0]["arguments"]["emergency_response_score"])
 
-            daily_living_score_int = int(response[0]["arguments"]["daily_living_impact_score"])
-            infrastructure_score_int = int(response[0]["arguments"]["infrastructure_impact_score"])
-            loss_of_life_score_int = int(response[0]["arguments"]["loss_of_life_score"])
-            emergency_response_score_int = int(response[0]["arguments"]["emergency_response_score"])
+            severity_score = ((
+                                          daily_living_score + infrastructure_score + loss_of_life_score + emergency_response_score) / 40) * 10
 
-            severity_score = ((daily_living_score_int + infrastructure_score_int + loss_of_life_score_int + emergency_response_score_int) / 40) * 10
+            data = {
+                "tweet_id": tweet_id,
+                "timestamp": timestamp,
+                "tweet_text": tweet_text,
+                "genuine_disaster": genuine,
+                "disaster_type": disaster_type,
+                "location": location,
+                "latitude": latitude,
+                "longitude": longitude,
+                "severity_score": severity_score
+            }
+            push_to_supabase(data)
 
-            row = [tweet_id, timestamp, tweet_text, genuine, disaster_type, disaster_location, severity_score]
-            with open('output.csv', 'a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(row)
-                file.close()
-
-with open("output.csv", "r") as csvfile:
-    csv_reader = csv.reader(csvfile)
-    tweet_list = [list(row) for row in csv_reader]
-    tweet_list[0].extend(["Latitude", "Longitude"])
-
-for i in range(1, len(tweet_list)):
-    location = tweet_list[i][5]
-    print(location)
-    
-    if location != "None" and location.lower() != "not specified":
-        location_data = get_location_data(location)
-
-        if location_data.get('code') != '018':
-            latitude = location_data.get('latt', 'None')
-            longitude = location_data.get('longt', 'None')
-        if latitude == "None":
-            location_parts = re.split(r", | and ", location)
-            first_item = location_parts[0]
-            last_item = location_parts[-1]
-            first_location_data = get_location_data(first_item)
-            last_location_data = get_location_data(last_item)
-
-            if first_location_data.get('code') != '018':
-                latitude = first_location_data.get('latt', 'None')
-                longitude = first_location_data.get('longt', 'None')
-            elif last_location_data.get('code') != '018' and latitude == "None":
-                latitude = last_location_data.get('latt', 'None')
-                longitude = last_location_data.get('longt', 'None')
-        print(f"Location: {location}, Latitude: {latitude}, Longitude: {longitude}\n")
-
-        tweet_list[i].extend([latitude, longitude])
-        time.sleep(2)
-
-with open("output.csv", "w", newline="", encoding="utf-8") as csvfile:
-    csv_writer = csv.writer(csvfile)
-    csv_writer.writerows(tweet_list)
-
-print("CSV file updated successfully!")
+print("Data processing and insertion to Supabase completed successfully!")

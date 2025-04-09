@@ -31,5 +31,5 @@ def push_csv_to_supabase(csv_file_path: str):
     for data in data_list:
         push_to_supabase(data)
 
-csv_file_path = "../../gen_ai_research/output.csv"
+csv_file_path = "output.csv"
 push_csv_to_supabase(csv_file_path)
