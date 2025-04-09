@@ -94,10 +94,12 @@ function HeatmapLayer({ disasters }) {
                 if (container) {
                     if (closestDisaster) {
                         container.innerHTML = `
-                            <h4>${closestDisaster.disaster_type || 'Unknown Disaster'}</h4>
-                            <p class="popup-detail"><strong>Severity:</strong> ${closestDisaster.severity_score || 'Unknown'}/10</p>
-                            <p class="popup-detail"><strong>Location:</strong> ${closestDisaster.location || 'Unknown'}</p>
-                        `;
+                        <h4>${closestDisaster.disaster_type || 'Unknown Disaster'}</h4>
+                        <p class="popup-detail"><strong>Severity:</strong> ${closestDisaster.severity_score || 'Unknown'}/10</p>
+                        <p class="popup-detail"><strong>Location:</strong> ${closestDisaster.location || 'Unknown'}</p>
+                        <p class="popup-detail"><strong>Tweets:</strong> ${closestDisaster.tweet_count}</p>
+                    `;
+
                     } else {
                         container.innerHTML = `
                             <h4>Hover over a disaster area</h4>
@@ -131,21 +133,30 @@ const DisasterMap = () => {
                 return;
             }
 
-            const formattedData = data
-                .map(disaster => ({
-                    ...disaster,
-                    severity_score: parseFloat(disaster.severity_score) || 0,
-                    latitude: parseFloat(disaster.latitude),
-                    longitude: parseFloat(disaster.longitude)
-                }))
-                .filter(disaster =>
-                    !isNaN(disaster.latitude) &&
-                    !isNaN(disaster.longitude) &&
-                    disaster.latitude !== null &&
-                    disaster.longitude !== null
-                );
+            const grouped = {};
 
-            setDisasters(formattedData);
+            data.forEach(disaster => {
+                const lat = parseFloat(disaster.latitude);
+                const lng = parseFloat(disaster.longitude);
+
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                const key = `${disaster.disaster_type}_${disaster.location}_${lat}_${lng}`;
+
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        ...disaster,
+                        severity_score: parseFloat(disaster.severity_score) || 0,
+                        latitude: lat,
+                        longitude: lng,
+                        tweet_count: 1
+                    };
+                } else {
+                    grouped[key].tweet_count += 1;
+                }
+            });
+
+            setDisasters(Object.values(grouped));
         };
 
         fetchDisasterData();
