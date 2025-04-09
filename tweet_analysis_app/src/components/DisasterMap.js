@@ -157,7 +157,7 @@ const DisasterMap = () => {
             <MapContainer
                 center={[39.8283, -98.5795]}
                 zoom={4}
-                style={{ height: "500px", width: "100%", borderRadius: "10px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}
+                style={{ height: "700px", width: "100%", borderRadius: "10px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

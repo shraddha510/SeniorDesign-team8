@@ -1,7 +1,7 @@
 .request-help-container {
   background: #f8f9fc; 
   color: #0a2a4a;
-  padding: 30px;
+  padding: 20px;
   border-radius: 16px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
   max-width: 450px;
@@ -12,13 +12,13 @@
 }
 
 .request-help-content h2 {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
 }
 
 .request-help-content p {
-  font-size: 16px;
-  margin-bottom: 20px;
+  font-size: 14px;
+  margin-bottom: 15px;
 }
 
 .request-help-button {
@@ -26,8 +26,8 @@
   color: white;
   border: none;
   border-radius: 10px;
-  padding: 14px 34px;
-  font-size: 16px;
+  padding: 10px 25px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;

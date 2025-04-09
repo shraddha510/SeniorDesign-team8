@@ -26,7 +26,19 @@ This guide outlines the steps to deploy the Python scripts (`data.py`, `genAI.py
     *   Navigate to your repository on GitHub.
     *   Go to `Settings` > `Secrets and variables` > `Actions`.
     *   Click `New repository secret` for each of the following:
-        *   `GHCR_PAT`: Create a GitHub Personal Access Token (PAT) with `read:packages` and `write:packages` scopes. **Ensure the PAT has access granted to this specific repository or your organization.** Copy the generated token and paste it as the value for this secret.
+        *   `GHCR_PAT`: Create a GitHub Personal Access Token (PAT) to authenticate with GitHub Container Registry (GHCR).
+            1.  Navigate to your GitHub **Settings** (click your profile picture in the top-right corner).
+            2.  In the left sidebar, scroll down and click **Developer settings**.
+            3.  In the left sidebar, click **Personal access tokens**, then select **Tokens (classic)**.
+            4.  Click **Generate new token** and select **Generate new token (classic)**.
+            5.  Give your token a descriptive **Note** (e.g., "GHCR Access for BlueSky Repo").
+            6.  Set an **Expiration** period (using an expiration date is recommended for security).
+            7.  Under **Select scopes**, check the boxes for:
+                *   `write:packages` (Allows uploading container images)
+                *   `read:packages` (Allows downloading container images)
+            8.  Click **Generate token** at the bottom.
+            9.  **Important:** Copy the generated token immediately. You will **not** be able to see it again after leaving the page.
+            10. Go back to your repository's `Settings` > `Secrets and variables` > `Actions` page and paste the copied token as the value for the `GHCR_PAT` secret.
         *   `VM_SSH_PRIVATE_KEY`: Copy the **entire contents** of your private SSH key file (the one corresponding to the public key added to the VM's `authorized_keys`) and paste it as the value for this secret. Make sure you copy the full key, including the `-----BEGIN ... KEY-----` and `-----END ... KEY-----` lines.
         *   `SUPABASE_URL`: Enter the URL for your Supabase project.
         *   `SUPABASE_KEY`: Enter your Supabase Service Role Key (recommended for server-side operations) or Anon Key.

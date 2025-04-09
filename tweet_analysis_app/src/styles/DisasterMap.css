@@ -1,7 +1,6 @@
 /* Map Container Styles */
 .map-container {
     padding: 20px;
-    margin-top: 10px;
     position: relative;
     overflow: hidden;
     z-index: 500;
