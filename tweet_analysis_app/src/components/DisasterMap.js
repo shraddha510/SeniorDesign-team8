@@ -164,7 +164,7 @@ const DisasterMap = () => {
 
     return (
         <div className="map-container">
-            <h2 className="map-title">US Disaster Risk Heatmap</h2>
+            <h2 className="map-title">Disaster Risk Heatmap</h2>
             <MapContainer
                 center={[39.8283, -98.5795]}
                 zoom={4}

@@ -91,7 +91,7 @@ const TopTweetsTable = () => {
 
   return (
     <div className="table-container">
-      <h2 className="table-title">Top 10 Disaster Posts Across The Country</h2>
+      <h2 className="table-title">Top 10 Disaster Posts Across The World</h2>
       <p className="table-subtitle">Genuine disasters ranked by severity score</p>
 
       <table className="tweets-table">
