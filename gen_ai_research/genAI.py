@@ -1,7 +1,9 @@
+import re
+
 import requests
 from pydantic import BaseModel, Field
 from supabase import create_client, Client
-import re
+
 from llm import OllamaClient, Model
 
 SUPABASE_URL = "https://opehiyxkmvneeggatqoj.supabase.co"
@@ -50,7 +52,7 @@ def get_location_data(city_name):
 response = supabase.table("bluesky_api_data").select("*").execute()
 data = response.data
 
-for record in data[:20]:
+for record in data[:10]:
     tweet_id = record["tweet_id"]
     timestamp = record["timestamp"]
     tweet_text = record["tweet_text"]
@@ -61,26 +63,19 @@ for record in data[:20]:
 
     if location and location.lower() != "none" and location.lower() != "not specified":
         location_data = get_location_data(location)
+        print(f"Raw location data for {location}: {location_data}")
 
-        if location_data.get("code") != "018":
-            latitude = location_data.get("latt", None)
-            longitude = location_data.get("longt", None)
-
-        if not latitude:
+        if location_data.get("code") != "018" and "latt" in location_data and "longt" in location_data:
+            latitude = location_data["latt"]
+            longitude = location_data["longt"]
+        else:
             location_parts = re.split(r", | and ", location)
-            first_item = location_parts[0]
-            last_item = location_parts[-1]
-            first_location_data = get_location_data(first_item)
-            last_location_data = get_location_data(last_item)
-
-            if first_location_data.get("code") != "018":
-                latitude = first_location_data.get("latt", None)
-                longitude = first_location_data.get("longt", None)
-            elif last_location_data.get("code") != "018" and not latitude:
-                latitude = last_location_data.get("latt", None)
-                longitude = last_location_data.get("longt", None)
-
-        print(f"Location: {location}, Latitude: {latitude}, Longitude: {longitude}\n")
+            for loc in location_parts:
+                loc_data = get_location_data(loc)
+                if loc_data.get("code") != "018" and "latt" in loc_data and "longt" in loc_data:
+                    latitude = loc_data["latt"]
+                    longitude = loc_data["longt"]
+                    break
 
 
     class ClassifyDisaster(BaseModel):
@@ -135,11 +130,11 @@ for record in data[:20]:
             "timestamp": timestamp,
             "tweet_text": tweet_text,
             "genuine_disaster": genuine,
-            "disaster_type": None,
-            "location": None,
+            "disaster_type": "None",
+            "location": "None",
             "latitude": latitude,
             "longitude": longitude,
-            "severity_score": None
+            "severity_score": "None"
         }
         push_to_supabase(data)
 
@@ -188,11 +183,11 @@ for record in data[:20]:
                 "timestamp": timestamp,
                 "tweet_text": tweet_text,
                 "genuine_disaster": genuine,
-                "disaster_type": None,
-                "location": None,
+                "disaster_type": "None",
+                "location": "None",
                 "latitude": latitude,
                 "longitude": longitude,
-                "severity_score": None
+                "severity_score": "None"
             }
             push_to_supabase(data)
 
@@ -226,7 +221,7 @@ for record in data[:20]:
             emergency_response_score = int(response[0]["arguments"]["emergency_response_score"])
 
             severity_score = ((
-                                          daily_living_score + infrastructure_score + loss_of_life_score + emergency_response_score) / 40) * 10
+                                      daily_living_score + infrastructure_score + loss_of_life_score + emergency_response_score) / 40) * 10
 
             data = {
                 "tweet_id": tweet_id,
