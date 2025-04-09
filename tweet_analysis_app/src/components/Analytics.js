@@ -38,10 +38,14 @@ const Analytics = () => {
 
   // -------------------- FILTER + TRANSFORM DATA --------------------
 
+  const [locationOptions, setLocationOptions] = useState([]);
+  const [selectedLocations, setSelectedLocations] = useState([]);
+
   // Filter dataset by selected types, date range, and severity
   const filteredData = useMemo(() => {
     return disasterTrends
       .filter(item => selectedTypes.length === 0 || selectedTypes.includes(item.type))
+      .filter(item => selectedLocations.length === 0 || selectedLocations.some(loc => loc.value === item.location))
       .filter(item => {
         const date = new Date(item.date);
         const from = dateRange.from ? new Date(dateRange.from) : null;
@@ -49,7 +53,7 @@ const Analytics = () => {
         return (!from || date >= from) && (!to || date <= to);
       })
       .filter(item => item.severity >= severityThreshold);
-  }, [disasterTrends, selectedTypes, dateRange, severityThreshold]);
+  }, [disasterTrends, selectedTypes, selectedLocations, dateRange, severityThreshold]);
 
   // Group tweets by date/type for line & stacked bar chart
   const groupedLineChartData = useMemo(() => {
@@ -65,8 +69,9 @@ const Analytics = () => {
   const filteredAffectedLocations = useMemo(() => {
     return affectedLocations
       .filter(item => selectedTypes.length === 0 || selectedTypes.includes(item.topDisaster))
+      .filter(item => selectedLocations.length === 0 || selectedLocations.some(loc => loc.value === item.location))
       .filter(item => item.avgSeverity >= severityThreshold);
-  }, [affectedLocations, selectedTypes, severityThreshold]);
+  }, [affectedLocations, selectedTypes, selectedLocations, severityThreshold]);
 
   // Shorten long location labels for Y-axis
   const MAX_LABEL_LENGTH = 25;
@@ -89,6 +94,15 @@ const Analytics = () => {
     });
     return Object.values(map);
   }, [filteredData]);
+
+  const ALL_OPTION = { value: "ALL", label: "All Types" };
+  const TYPE_OPTIONS = [ALL_OPTION, ...DISASTER_TYPES.map(v => ({ value: v, label: v }))];
+
+  useEffect(() => {
+    // After affectedLocations is set:
+    const unique = [...new Set(disasterTrends.map(item => item.location))];
+    setLocationOptions(unique.map(loc => ({ value: loc, label: loc })));
+  }, [disasterTrends]);
 
   // -------------------- FETCH DATA FROM SUPABASE --------------------
 
@@ -207,7 +221,6 @@ const Analytics = () => {
       {/* KPI Cards */}
       <KPICarousel 
         kpiStats={kpiStats} 
-        emergencyStats={{ totalRequests: 0, pending: 0, resolved: 0 }} 
       />
 
       {/* Filter Panel */}
@@ -219,9 +232,26 @@ const Analytics = () => {
             <label>Disaster Type</label>
             <Select
               isMulti
-              options={DISASTER_TYPES.map(v => ({ value: v, label: v }))}
-              value={selectedTypes.map(v => ({ value: v, label: v }))}
-              onChange={s => setSelectedTypes(s.map(d => d.value))}
+              options={TYPE_OPTIONS}
+              value={
+                selectedTypes.length === DISASTER_TYPES.length
+                  ? [ALL_OPTION] // show just one "All Types" pill
+                  : selectedTypes.map(type => ({ value: type, label: type }))
+              }
+              onChange={(selectedOptions, actionMeta) => {
+                if (!selectedOptions) {
+                  setSelectedTypes([]); // when everything is cleared
+                  return;
+                }
+
+                const values = selectedOptions.map(opt => opt.value);
+
+                if (values.includes("ALL")) {
+                  setSelectedTypes(DISASTER_TYPES); // select all types
+                } else {
+                  setSelectedTypes(values); // select only clicked types
+                }
+              }}
               className="custom-select"
             />
           </div>
@@ -233,6 +263,19 @@ const Analytics = () => {
               <input type="date" value={dateRange.from} onChange={e => setDateRange({ ...dateRange, from: e.target.value })} />
               <input type="date" value={dateRange.to} onChange={e => setDateRange({ ...dateRange, to: e.target.value })} />
             </div>
+          </div>
+
+          {/* Location filter */}      
+          <div className="filter-item full-width">
+            <label>Location</label>
+            <Select
+              isMulti
+              options={locationOptions}
+              value={selectedLocations}
+              onChange={(selected) => setSelectedLocations(selected || [])}
+              className="custom-select"
+              placeholder="Select Location(s)"
+            />
           </div>
 
           {/* Severity filter */}
@@ -254,6 +297,7 @@ const Analytics = () => {
         <div className="filter-actions">
           <button className="reset-btn" onClick={() => {
             setSelectedTypes([]);
+            setSelectedLocations([]);
             setDateRange({ from: "", to: "" });
             setSeverityThreshold(0);
           }}>Reset Filters</button>

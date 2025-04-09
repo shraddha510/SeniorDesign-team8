@@ -214,8 +214,8 @@ def upload_to_supabase(csv_path):
             clean_record = {k: ("" if pd.isna(v) else v) for k, v in record.items()}
             response = supabase.table("bluesky_api_data").upsert(clean_record, on_conflict="tweet_id").execute()
 
-            if response.status_code != 201:  # 201 Created is expected
-                print(f"Insert failed for record {record.get('tweet_id', 'Unknown')}: {response.data}")
+            if response.error:
+                print(f"Insert failed for record {record.get('tweet_id', 'Unknown')}: {response.error}")
         except Exception as e:
             print(f"Insert failed for record {record.get('tweet_id', 'Unknown')}: {e}")
 

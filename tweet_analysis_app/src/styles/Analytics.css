@@ -190,6 +190,7 @@
 
 .carousel {
     display: flex;
+    justify-content: center;
     gap: 20px;
     overflow: hidden;
     padding: 10px 0;
@@ -253,6 +254,31 @@
     background-color: #f0f4ff;
 }
 
+.kpi-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 0;
+    margin-bottom: 30px;
+  }
+  
+  .kpi-block {
+    flex: 1;
+    height: 140px;
+    background-color: #e9f2ff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .kpi-block:hover {
+    transform: translateY(-4px);
+  }  
+
 /* ------------------ Responsive ------------------ */
 @media (max-width: 768px) {
     .analytics-grid {
@@ -281,3 +307,13 @@
         flex-direction: column;
     }
 }
+
+@media (max-width: 768px) {
+    .kpi-row {
+      flex-direction: column;
+    }
+  
+    .kpi-block {
+      width: 100%;
+    }
+  }
