@@ -1,7 +1,4 @@
-// Imports
 import React, { useState, useEffect, useRef } from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { motion } from "framer-motion";
 import "../styles/Analytics.css";
 
 const KPICarousel = ({ kpiStats }) => {
