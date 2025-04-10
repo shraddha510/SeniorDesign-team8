@@ -13,74 +13,6 @@
     color: #0A2A4A;
 }
 
-/* Map Instructions */
-.map-instructions {
-    padding: 10px;
-    background-color: #e6f7ff;
-    border-left: 4px solid #1890ff;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.info-icon {
-    margin-right: 10px;
-    background-color: #1890ff;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-.map-instructions kbd {
-    background-color: #f1f1f1;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    padding: 1px 5px;
-    font-family: monospace;
-}
-
-/* Loading and Error States */
-.loading-container {
-    padding: 20px;
-    text-align: center;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    margin: 20px 0;
-}
-
-.loading-container p {
-    font-size: 18px;
-}
-
-.error-container {
-    padding: 20px;
-    text-align: center;
-    background-color: #fff0f0;
-    border-radius: 10px;
-    margin: 20px 0;
-    border: 1px solid #ffcccc;
-}
-
-.error-container p {
-    font-size: 18px;
-    color: #cc0000;
-}
-
-/* Map Styling */
-.disaster-map {
-    height: 700px;
-    width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
 /* Legend Styles */
 .map-legend {
     background: white;
@@ -122,7 +54,7 @@
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-size: 16px;
-    width: 280px;
+    width: 500px;
 }
 
 .disaster-popup h4 {

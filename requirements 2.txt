@@ -1,7 +1,0 @@
-requests
-pandas
-emoji
-vaderSentiment
-supabase
-python-dotenv
-pydantic 
