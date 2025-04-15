@@ -5,6 +5,14 @@ import 'leaflet/dist/leaflet.css';
 import { supabase } from '../supabase';
 import '../styles/DisasterMap.css';
 
+function toTitleCase(str) {
+    return str
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
 /**
  * Custom component to handle scroll behavior for the map
  * Allows page scrolling by default and map zooming with Ctrl+scroll
@@ -144,7 +152,7 @@ function HeatmapLayer({ disasters }) {
             if (container) {
                 if (closestDisaster) {
                     container.innerHTML = `
-                    <h4>${closestDisaster.disaster_type || 'Unknown Disaster'}</h4>
+                    <h4>${toTitleCase(closestDisaster.disaster_type || 'Unknown Disaster')}</h4>
                     <p class="popup-detail"><strong>Severity:</strong> ${closestDisaster.severity_score || 'Unknown'}/10</p>
                     <p class="popup-detail"><strong>Location:</strong> ${closestDisaster.location || 'Unknown'}</p>
                     <p class="popup-detail"><strong>Number of Tweets:</strong> ${closestDisaster.tweet_count}</p>
