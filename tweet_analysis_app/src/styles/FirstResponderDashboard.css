@@ -332,3 +332,11 @@
   font-size: 1.1rem;
   border-left: 4px solid #e74c3c;
 }
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+

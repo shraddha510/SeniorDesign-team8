@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/FirstResponderDashboard.css';
 import { useHelpRequests } from '../context/HelpRequestContext';
 
 const FirstResponderDashboard = () => {
+  const navigate = useNavigate();
   const { helpRequests, updateHelpRequestStatus, loading, error } = useHelpRequests();
   const [filters, setFilters] = useState({
     status: 'all',
     emergencyType: 'all',
     timeFrame: 'all'
   });
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('firstResponderAuthenticated') === 'true';
+    if (!isAuthenticated) {
+      navigate('/first-responder-login');
+    }
+  }, [navigate]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -119,7 +129,9 @@ const FirstResponderDashboard = () => {
 
   return (
     <div className="first-responder-dashboard-container">
-      <h1>First Responder Dashboard</h1>
+      <div className="dashboard-header">
+        <h1>First Responder Dashboard</h1>
+      </div>
       <p>View and manage emergency assistance requests below.</p>
       
       <div className="dashboard-content">
