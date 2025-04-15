@@ -31,6 +31,7 @@ const TopTweetsTable = () => {
           .select('*')
           .eq('genuine_disaster', true)
           .not('severity_score', 'is', null)
+          .neq('severity_score', 'None')
           .order('severity_score', { ascending: false })
           .limit(10);
 

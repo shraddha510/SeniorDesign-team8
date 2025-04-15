@@ -1,5 +1,10 @@
+:root {
+  --max-width: 1200px;
+}
+
 body {
     margin: 0;
+    padding-top: 80px; /* Added padding for fixed navbar */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -24,4 +29,20 @@ a {
 a:hover {
     opacity: 0.5;
     transition: 0.5s;
+}
+
+.app-container {
+    max-width: 1200px; /* Or your preferred max width */
+    margin: 0 auto; /* Center the container */
+    padding: 0 20px; /* Add some padding on the sides */
+}
+
+/* Add content wrapper class */
+.content-wrapper {
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 40px; 
+  padding-right: 40px;
+  width: 100%; /* Ensure padding is respected */
 }

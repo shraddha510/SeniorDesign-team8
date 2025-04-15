@@ -7,19 +7,22 @@
     justify-content: flex-start;
     position: relative;
     min-height: 100vh;
+    padding: 20px 0;
 }
 
 .title {
     color: #ffffff;
-    font-size: 48px;
+    font-size: 28px;
     font-weight: 600;
     margin-top: 15px;
+    margin-bottom: 10px;
 }
 
 .description {
     color: #ffffff;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 200;
+    margin-bottom: 10px;
 }
 
 .tweet-button {
@@ -54,133 +57,393 @@
 }
 
 .filter-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin: 10px 0;
-    background-color: rgba(255, 255, 255, 0.82);
-    border-radius: 20px;
-    padding-right: 20px;
+    width: 100%;
+    margin: 0;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
 }
 
-.filter-section {
+.filter-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.filter-item {
     display: flex;
     flex-direction: column;
-    min-width: 200px;
-    padding: 20px 0;
-    margin-left: 20px;
+    min-width: 120px;
+    flex: 1;
 }
 
-.filter-section label {
-    color: black;
+.filter-item:last-child {
+    flex: 0 0 auto;
+    margin-left: 10px;
 }
 
-.filter-section input#cityFilter,
-.filter-section select#severityFilter,
-.filter-section select#disasterFilter {
-    width: 100%;
-    padding: 8px 12px;
+.filter-item label {
+    color: #333;
     font-size: 14px;
-    border: 1px solid #ccc;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.filter-item select,
+.filter-item input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    background-color: #fff;
+    background-color: white;
+    font-size: 14px;
+    height: 35px;
 }
 
-.filter-section input#cityFilter::placeholder {
-    color: gray;
+.filter-item input::placeholder {
+    color: #aaa;
 }
 
-.reset-button {
-    border-radius: 7px;
-    padding: 8px 16px;
+.reset-filters-btn {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 15px;
+    height: 35px;
+    font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-left: 20px;
+    white-space: nowrap;
 }
 
-.reset-button:hover {
-    background-color: rgba(0, 123, 255, 0.25);
+.reset-filters-btn:hover {
+    background-color: #f5f5f5;
 }
 
-/* Tweet Grid Container */
+/* Tweet List Container */
 .tweet-cards {
-    column-count: 3;
-    column-gap: 16px;
-    padding: 0 15%;
+    column-count: 1;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tweet-cards-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .tweet-card {
-    display: inline-block;
+    display: block;
     width: 100%;
-    margin-bottom: 16px;
+    margin-bottom: 15px;
     padding: 15px;
-    border: 3px solid #ddd;
-    border-radius: 20px;
+    border-radius: 8px;
     background-color: #fff;
     transition: all 0.3s ease;
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.tweet-severity-high {
+.tweet-card:last-child {
+    margin-bottom: 10px;
+}
+
+/* Severity-based styling for tweet cards */
+.tweet-card.severity-high {
     background-color: #ffeaea;
-    border-color: #ff4d4d;
-    color: #c0392b;
+    border-left: 4px solid #ff4d4d;
 }
 
-.tweet-severity-moderate {
+.tweet-card.severity-critical {
+    background-color: #ffe0e0;
+    border-left: 4px solid #cc0000;
+}
+
+.tweet-card.severity-moderate {
     background-color: #fffbea;
-    border-color: #f1c40f;
-    color: #d4ac0d;
+    border-left: 4px solid #f1c40f;
 }
 
-.tweet-severity-low {
+.tweet-card.severity-low {
     background-color: #eaffea;
-    border-color: #2ecc71;
-    color: #27ae60;
+    border-left: 4px solid #2ecc71;
 }
 
-.tweet-severity-unknown {
-    background-color: #f0f4f7;
-    border-color: #95a5a6;
-    color: #7f8c8d;
+.tweet-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    justify-content: space-between;
 }
 
-.tweet-content {
-    font-size: 16px;
-    margin: 5px 0;
-    color: #444;
+.tweet-author {
+    display: flex;
+    align-items: center;
 }
 
-.tweet-info {
-    font-size: 14px;
+.profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.author-handle {
+    font-size: 13px;
     color: #666;
 }
 
-.severity-high {
-    color: red;
+.severity-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.severity-moderate {
-    color: orange;
+.severity-badge.high {
+    background-color: #ffdddd;
+    color: #c0392b;
 }
 
-.no-tweets {
-    color: #ffffff;
-    font-size: 24px;
-    font-weight: 500;
-    text-align: center;
-    margin-top: 24px;
+.severity-badge.critical {
+    background-color: #ffcccc;
+    color: #7a0000;
 }
 
-/* Make the layout responsive */
-@media (max-width: 1024px) {
-    .tweet-cards {
-        column-count: 2; /* 2 columns on medium screens */
-    }
+.severity-badge.moderate {
+    background-color: #fff5cc;
+    color: #d4ac0d;
 }
 
+.severity-badge.low {
+    background-color: #ddffdd;
+    color: #27ae60;
+}
+
+/* Adjust margins for content in colored cards */
+.tweet-card.severity-high .tweet-content,
+.tweet-card.severity-critical .tweet-content,
+.tweet-card.severity-moderate .tweet-content,
+.tweet-card.severity-low .tweet-content {
+    margin-left: 5px;
+}
+
+/* Adjust meta info color based on severity */
+.tweet-card.severity-high .tweet-meta,
+.tweet-card.severity-critical .tweet-meta {
+    color: #7a0000;
+}
+
+.tweet-card.severity-moderate .tweet-meta {
+    color: #7a5000;
+}
+
+.tweet-card.severity-low .tweet-meta {
+    color: #006633;
+}
+
+.tweet-content {
+    font-size: 15px;
+    margin: 8px 0 12px 0;
+    color: #333;
+    line-height: 1.4;
+}
+
+.tweet-meta {
+    display: flex;
+    align-items: center;
+    color: #666;
+    font-size: 13px;
+}
+
+.tweet-location {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.tweet-time {
+    display: flex;
+    align-items: center;
+}
+
+.load-more-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+.load-more-btn:hover {
+    background-color: #e9ecef;
+}
+
+.tweet-severity-high, .tweet-severity-moderate, .tweet-severity-low, .tweet-severity-unknown {
+    background-color: #fff;
+    border-color: transparent;
+}
+
+.feed-header {
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    background-color: #0096FF;
+    border: 1px solid #0085e0;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: white;
+}
+
+.filter-btn:hover {
+    background-color: #0085e0;
+}
+
+/* Keep the responsive rules but adapt to list view */
 @media (max-width: 768px) {
-    .tweet-cards {
-        column-count: 1; /* 1 column on small screens */
+    .tweet-cards, .filter-container {
+        width: 95%;
     }
+    
+    .filter-row {
+        flex-wrap: wrap;
+    }
+    
+    .filter-item {
+        min-width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .filter-item:last-child {
+        width: 100%;
+        margin-left: 0;
+    }
+    
+    .reset-filters-btn {
+        width: 100%;
+    }
+}
+
+/* Filters Modal Styling */
+.filters-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #777;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.filter-options {
+    margin-top: 20px;
+}
+
+.filter-options .filter-section {
+    margin-bottom: 15px;
+    min-width: auto;
+    padding: 0;
+    margin-left: 0;
+}
+
+.filter-options .filter-section label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.filter-options .filter-section select,
+.filter-options .filter-section input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #f8f9fa;
+}
+
+.apply-filters-btn,
+.reset-filters-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.2s;
+}
+
+.apply-filters-btn {
+    background-color: #0056b3;
+    color: white;
+    margin-right: 10px;
+}
+
+.reset-filters-btn:hover {
+    background-color: #e9ecef;
 }

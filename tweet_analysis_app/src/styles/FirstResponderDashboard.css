@@ -26,7 +26,6 @@
 }
 
 .filter-panel {
-  width: 300px;
   flex-shrink: 0;
   position: sticky;
   top: 2rem;
@@ -71,6 +70,7 @@
   border-radius: 4px;
   margin-bottom: 1.5rem;
   border-left: 4px solid #3498db;
+  width: 100%;
 }
 
 .filter-summary p {

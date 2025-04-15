@@ -39,7 +39,7 @@ def fetch_from_supabase(input_date):
         supabase
         .table("bluesky_api_data")
         .select("*")
-        .gte("timestamp", f"{input_date}T14:00:00+00:00")
+        .gte("timestamp", f"{input_date}T00:00:00+00:00")
         .lt("timestamp", f"{input_date}T23:59:59+00:00")
         .execute()
     )
