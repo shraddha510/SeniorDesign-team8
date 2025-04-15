@@ -109,7 +109,7 @@ const Analytics = () => {
   useEffect(() => {
     const fetchData = async () => {
       const { data, error } = await supabase
-        .from("gen_ai_output")
+        .from("multiprocessing_gen_ai_output")
         .select("*")
         .eq("genuine_disaster", true);
 

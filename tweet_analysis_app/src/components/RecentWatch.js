@@ -11,7 +11,7 @@ export const RecentWatch = ({className}) => {
     useEffect(() => {
         const fetchTweets = async () => {
             const {data, error} = await supabase
-                .from('gen_ai_output')
+                .from('multiprocessing_gen_ai_output')
                 .select('tweet_text, disaster_type, location, severity_score, timestamp')
                 .eq('genuine_disaster', true) // Only fetch tweets where genuine_disaster is TRUE
                 .order('timestamp', {ascending: false});

@@ -176,7 +176,7 @@ const DisasterMap = () => {
     const [disasters, setDisasters] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeTable] = useState('fake_gen_ai_output');
+    const [activeTable] = useState('multiprocessing_gen_ai_output');
 
     // Fetch disaster data from Supabase
     useEffect(() => {

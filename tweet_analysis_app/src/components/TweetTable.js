@@ -13,7 +13,7 @@ const TopTweetsTable = () => {
         
         //  Check if we can get any data at all
         const { data: allData, error: allDataError } = await supabase
-          .from('gen_ai_output')
+          .from('multiprocessing_gen_ai_output')
           .select('*')
           .limit(1);
 
@@ -27,7 +27,7 @@ const TopTweetsTable = () => {
         // Use specific query - filtering for genuine disasters with non-null severity scores 
         // and sorting by severity_score in descending order
         const { data, error } = await supabase
-          .from('gen_ai_output')
+          .from('multiprocessing_gen_ai_output')
           .select('*')
           .eq('genuine_disaster', true)
           .not('severity_score', 'is', null)

@@ -233,7 +233,7 @@ export const HelpRequestProvider = ({ children }) => {
       
       // Search for recent tweets that mention both the location and disaster type
       const { data, error } = await supabase
-        .from('gen_ai_output')
+        .from('multiprocessing_gen_ai_output')
         .select('*')
         .eq('genuine_disaster', true)
         .order('timestamp', { ascending: false })
