@@ -147,7 +147,7 @@ function HeatmapLayer({ disasters }) {
                 }
             });
 
-            // Update info panel
+            // Info panel
             const container = infoControlRef.current?._container;
             if (container) {
                 if (closestDisaster) {
@@ -184,7 +184,6 @@ function DateRangeFilter({ startDate, endDate, onStartDateChange, onEndDateChang
     return (
         <div className="filter-container">
             <div className="filter-row">
-                <div className="filter-label">Filter by Date:</div>
                 <div className="date-fields">
                     <div className="date-field">
                         <label htmlFor="start-date">Start Date:</label>
@@ -209,7 +208,6 @@ function DateRangeFilter({ startDate, endDate, onStartDateChange, onEndDateChang
                     Apply
                 </button>
             </div>
-            {/* Removed the filter status from here since it appears to be duplicated elsewhere */}
         </div>
     );
 }
