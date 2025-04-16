@@ -31,18 +31,8 @@ a:hover {
     transition: 0.5s;
 }
 
-.app-container {
-    max-width: 1200px; /* Or your preferred max width */
-    margin: 0 auto; /* Center the container */
-    padding: 0 20px; /* Add some padding on the sides */
-}
-
-/* Add content wrapper class */
-.content-wrapper {
-  max-width: var(--max-width);
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 40px; 
-  padding-right: 40px;
-  width: 100%; /* Ensure padding is respected */
+.app-container, .content-wrapper {
+    max-width: 100%; 
+    padding-left: 40px;
+    padding-right: 40px;
 }

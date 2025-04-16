@@ -1,21 +1,26 @@
 .recent-watch {
     background: #24548d;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
     align-items: center;
     justify-content: flex-start;
     position: relative;
-    min-height: 100vh;
+    min-height: auto;
     padding: 20px 0;
-}
+  }  
 
 .title {
     color: #ffffff;
     font-size: 28px;
     font-weight: 600;
     margin-top: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .description {
@@ -67,6 +72,7 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: flex-end;
+    justify-content: center;
     gap: 15px;
 }
 

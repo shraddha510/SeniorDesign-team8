@@ -1,46 +1,59 @@
 .request-help-container {
-  background: #f8f9fc; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 24px 0;
+  padding: 0 16px;
+}
+
+.request-help-content {
+  background: #f8f9fc;
   color: #0a2a4a;
-  padding: 16px;
-  border-radius: 14px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  padding: 16px 18px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   text-align: center;
-  position: relative;
-  backdrop-filter: blur(10px); 
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  margin-left: 20px;
+  max-width: 420px;
+  width: 100%;
 }
 
 .request-help-content h2 {
   font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .request-help-content p {
   font-size: 13px;
-  margin-bottom: 12px;
+  line-height: 1.4;
+  margin-bottom: 10px;
 }
 
 .request-help-button {
   background: linear-gradient(90deg, #007bff, #0056b3);
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 8px 20px;
-  font-size: 13px;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  display: inline-block; 
+  width: auto; 
+  white-space: nowrap; 
+  text-align: center;
 }
 
 .request-help-button:hover {
   background: linear-gradient(90deg, #0056b3, #003d80);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 }
 
 .request-help-button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
