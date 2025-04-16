@@ -28,7 +28,6 @@
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     margin-bottom: 30px;
-    position: sticky;
     top: 10px;
     z-index: 50;
 }
@@ -101,20 +100,24 @@
 
 /* ------------------ Filter Actions ------------------ */
 .filter-actions {
-    text-align: right;
+    display: flex;
+    justify-content: flex-end; 
     margin-top: 10px;
 }
 
 .reset-btn {
-    margin-top: 20px;
-    padding: 10px 16px;
+    margin-top: 0;
+    width: auto;
+    padding: 8px 14px;
     background-color: #f44336;
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
+    align-self: flex-end; 
 }
 
 .reset-btn:hover {
@@ -238,6 +241,39 @@
   
   .kpi-block:hover {
     transform: translateY(-4px);
+  }  
+
+  /* ------------------ Chart UI ------------------ */
+
+  .chart-wrapper-with-nav {
+    position: relative;
+  }
+  
+  .chart-nav-top-right {
+    position: absolute;
+    top: -40px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+  }
+  
+  .chart-nav-btn {
+    background-color: #A0C4F0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+  }
+  
+  .chart-nav-btn:hover:not(:disabled) {
+    background-color: #0059B7;
+  }
+  
+  .chart-nav-btn:disabled {
+    opacity: 1;
+    cursor: not-allowed;
   }  
 
 /* ------------------ Responsive ------------------ */

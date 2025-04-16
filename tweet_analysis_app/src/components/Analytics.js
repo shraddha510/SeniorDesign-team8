@@ -11,7 +11,12 @@ import KPICarousel from "./KPICarousel.js";
 import { supabase } from '../supabase';
 
 // Chart color palette
-const COLORS = ["#FF6666", "#FFCC33", "#66CC66", "#6699FF"];
+const COLORS = [
+  "#FF6666", "#FFCC33", "#66CC66", "#6699FF",
+  "#FF99CC", "#9966FF", "#FF9966", "#66FFFF",
+  "#CCFF66", "#FF6666", "#00CC99", "#3399FF",
+  "#FF6699", "#9999FF", "#FFDE59", "#C70039"
+];
 
 // Supported disaster types for filtering
 const DISASTER_TYPES = [
@@ -30,6 +35,9 @@ const Analytics = () => {
     tweetsLast24h: 0,
     avgSeverity: 0,
   });
+
+  const [chartPage, setChartPage] = useState(0); // Each page = 3 days
+  const daysPerPage = 3;
 
   // Filter state
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -65,6 +73,12 @@ const Analytics = () => {
     return Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date));
   }, [filteredData]);
 
+  const pagedLineChartData = useMemo(() => {
+    const start = chartPage * daysPerPage;
+    const end = start + daysPerPage;
+    return groupedLineChartData.slice(start, end);
+  }, [groupedLineChartData, chartPage]);  
+
   // Filter affected locations by disaster type + severity
   const filteredAffectedLocations = useMemo(() => {
     return affectedLocations
@@ -75,14 +89,17 @@ const Analytics = () => {
 
   // Shorten long location labels for Y-axis
   const MAX_LABEL_LENGTH = 25;
-  const shortenedLocations = filteredAffectedLocations.map((item) => ({
-    ...item,
-    shortLabel:
-      item.location.length > MAX_LABEL_LENGTH
+  const shortenedLocations = useMemo(() => {
+    const sorted = [...filteredAffectedLocations].sort((a, b) => b.tweets - a.tweets);
+    const topN = sorted.slice(0, 10); // limit to top 10
+    return topN.map((item) => ({
+      ...item,
+      shortLabel: item.location.length > MAX_LABEL_LENGTH
         ? item.location.slice(0, MAX_LABEL_LENGTH) + "..."
         : item.location,
-  }));
-
+    }));
+  }, [filteredAffectedLocations]);
+  
   // Build severity counts per disaster type
   const severityByDisasterType = useMemo(() => {
     const map = {};
@@ -98,11 +115,27 @@ const Analytics = () => {
   const ALL_OPTION = { value: "ALL", label: "All Types" };
   const TYPE_OPTIONS = [ALL_OPTION, ...DISASTER_TYPES.map(v => ({ value: v, label: v }))];
 
+  const formatDate = (dateStr) => {
+    const [year, month, day] = dateStr.split("-");
+    return `${month}/${day}/${year}`;
+  };
+  
   useEffect(() => {
     // After affectedLocations is set:
     const unique = [...new Set(disasterTrends.map(item => item.location))];
     setLocationOptions(unique.map(loc => ({ value: loc, label: loc })));
   }, [disasterTrends]);
+
+  const [severityPage, setSeverityPage] = useState(0);
+  const typesPerPage = 5;
+
+  const pagedSeverityData = useMemo(() => {
+    const start = severityPage * typesPerPage;
+    const end = start + typesPerPage;
+    return severityByDisasterType.slice(start, end);
+  }, [severityByDisasterType, severityPage]);
+  
+
 
   // -------------------- FETCH DATA FROM SUPABASE --------------------
 
@@ -117,10 +150,10 @@ const Analytics = () => {
 
       const now = new Date();
       const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      let total = 0, sumSeverity = 0, tweets24h = 0;
-      const recentTypes = new Set();
+      let total = 0, sumSeverity = 0, recentDate = null, tweetsByDate = {};
       const trends = [], locationMap = {};
-
+      const recentTypes = new Set();
+      
       // Convert raw disaster type into normalized categories
       const normalizeDisasterType = (raw) => {
         const lower = raw.toLowerCase();
@@ -146,25 +179,28 @@ const Analytics = () => {
         const timestamp = new Date(entry.timestamp);
         const type = normalizeDisasterType(entry.disaster_type);
         const severityVal = Number(entry.severity_score);
+        const dateStr = timestamp.toISOString().split("T")[0];
 
         if (!isNaN(severityVal)) {
           sumSeverity += severityVal;
           total++;
         }
 
-        // Build data row
+        // Save tweet in trends
         const item = {
-          date: timestamp.toISOString().split("T")[0],
+          date: dateStr,
           type,
           severity: severityVal,
           location: entry.location
         };
         trends.push(item);
 
-        // Count for 24h KPI
-        if (timestamp >= last24h) {
-          tweets24h++;
-          recentTypes.add(type);
+        // Count tweets by date
+        tweetsByDate[dateStr] = (tweetsByDate[dateStr] || 0) + 1;
+
+        // Track most recent date
+        if (!recentDate || new Date(dateStr) > new Date(recentDate)) {
+          recentDate = dateStr;
         }
 
         // Group location stats
@@ -183,12 +219,13 @@ const Analytics = () => {
         loc.totalSeverity += severityVal;
         loc.count++;
         loc.topDisasterCount[type] = (loc.topDisasterCount[type] || 0) + 1;
+
+        if (dateStr === recentDate) recentTypes.add(type);
       });
 
       // Process location stats and update state
       setDisasterTrends(trends);
-
-      const processedLocations = Object.values(locationMap).map(loc => {
+      setAffectedLocations(Object.values(locationMap).map(loc => {
         const topDisaster = Object.entries(loc.topDisasterCount).sort((a, b) => b[1] - a[1])[0][0];
         return {
           location: loc.location,
@@ -196,17 +233,15 @@ const Analytics = () => {
           avgSeverity: +(loc.totalSeverity / loc.count).toFixed(1),
           topDisaster,
         };
-      });
-
-      setAffectedLocations(processedLocations);
-
-      // Update KPI stats
+      }));
+      
+      // Update KPI Stats
       setKPIStats({
         totalDisasters: total,
-        tweetsLast24h: tweets24h,
+        tweetsLast24h: tweetsByDate[recentDate] || 0, // Use most recent available day
         avgSeverity: total > 0 ? +(sumSeverity / total).toFixed(1) : 0,
         activeDisasters: Array.from(recentTypes)
-      });
+      });      
     };
 
     fetchData();
@@ -309,91 +344,241 @@ const Analytics = () => {
         {/* Disaster Trends Over Time */}
         <ChartWrapper title="Disaster Trends Over Time" description="Tracks disaster-related tweet volume by type over time.">
           {selectedTypes.length && groupedLineChartData.length ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={groupedLineChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                {selectedTypes.map((type, i) => (
-                  <Line key={type} dataKey={type} stroke={COLORS[i % COLORS.length]} strokeWidth={2} />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="chart-wrapper-with-nav">
+              <div className="chart-nav-top-right">
+                <button
+                  onClick={() => setChartPage(prev => Math.max(prev - 1, 0))}
+                  disabled={chartPage === 0}
+                  className="chart-nav-btn"
+                >
+                  &#8592;
+                </button>
+                <button
+                  onClick={() => setChartPage(prev =>
+                    (chartPage + 1) * daysPerPage < groupedLineChartData.length ? prev + 1 : prev
+                  )}
+                  disabled={(chartPage + 1) * daysPerPage >= groupedLineChartData.length}
+                  className="chart-nav-btn"
+                >
+                  &#8594;
+                </button>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={pagedLineChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tickFormatter={formatDate} />
+                  <YAxis />
+                  <Tooltip labelFormatter={formatDate} />
+                  <Legend
+                    content={({ payload }) => {
+                      const count = payload.length;
+                      const firstRowCount = count <= 8 ? count : Math.ceil(count / 2);
+                      const secondRowCount = count <= 8 ? 0 : count - firstRowCount;
+                      const topRow = payload.slice(0, firstRowCount);
+                      const bottomRow = payload.slice(firstRowCount);
+
+                      const renderRow = (items) => (
+                        <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginBottom: "4px", flexWrap: "wrap" }}>
+                          {items.map((entry, index) => (
+                            <div key={`legend-${index}`} style={{ display: "flex", alignItems: "center", fontSize: 12 }}>
+                              <div style={{
+                                width: 10,
+                                height: 10,
+                                backgroundColor: entry.color,
+                                marginRight: 6,
+                                borderRadius: 2
+                              }} />
+                              {entry.value}
+                            </div>
+                          ))}
+                        </div>
+                      );
+
+                      return (
+                        <div>
+                          {renderRow(topRow)}
+                          {secondRowCount > 0 && renderRow(bottomRow)}
+                        </div>
+                      );
+                    }}
+                  />
+                  {selectedTypes.map((type, i) => (
+                    <Line key={type} dataKey={type} stroke={COLORS[i % COLORS.length]} strokeWidth={2} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           ) : <NoDataMessage />}
         </ChartWrapper>
 
         {/* Disaster Type Breakdown */}
         <ChartWrapper title="Disaster Type Breakdown" description="Stacked bars show tweet counts by type per day.">
           {selectedTypes.length && groupedLineChartData.length ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={groupedLineChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                {selectedTypes.map((type, i) => (
-                  <Bar key={type} dataKey={type} stackId="a" fill={COLORS[i % COLORS.length]} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="chart-wrapper-with-nav">
+              <div className="chart-nav-top-right">
+                <button
+                  onClick={() => setChartPage(prev => Math.max(prev - 1, 0))}
+                  disabled={chartPage === 0}
+                  className="chart-nav-btn"
+                >
+                  &#8592;
+                </button>
+                <button
+                  onClick={() => setChartPage(prev =>
+                    (chartPage + 1) * daysPerPage < groupedLineChartData.length ? prev + 1 : prev
+                  )}
+                  disabled={(chartPage + 1) * daysPerPage >= groupedLineChartData.length}
+                  className="chart-nav-btn"
+                >
+                  &#8594;
+                </button>
+              </div>
+
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={pagedLineChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tickFormatter={formatDate} />
+                  <YAxis />
+                  <Tooltip labelFormatter={formatDate} />
+                  <Legend
+                    content={({ payload }) => {
+                      const count = payload.length;
+                      const firstRowCount = count <= 8 ? count : Math.ceil(count / 2);
+                      const secondRowCount = count <= 8 ? 0 : count - firstRowCount;
+                      const topRow = payload.slice(0, firstRowCount);
+                      const bottomRow = payload.slice(firstRowCount);
+
+                      const renderRow = (items) => (
+                        <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginBottom: "4px", flexWrap: "wrap" }}>
+                          {items.map((entry, index) => (
+                            <div key={`legend-${index}`} style={{ display: "flex", alignItems: "center", fontSize: 12 }}>
+                              <div style={{
+                                width: 10,
+                                height: 10,
+                                backgroundColor: entry.color,
+                                marginRight: 6,
+                                borderRadius: 2
+                              }} />
+                              {entry.value}
+                            </div>
+                          ))}
+                        </div>
+                      );
+
+                      return (
+                        <div>
+                          {renderRow(topRow)}
+                          {secondRowCount > 0 && renderRow(bottomRow)}
+                        </div>
+                      );
+                    }}
+                  />
+                  {selectedTypes.map((type, i) => (
+                    <Bar key={type} dataKey={type} stackId="a" fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           ) : <NoDataMessage />}
         </ChartWrapper>
 
-        {/* Top Affected Locations */}
-        <ChartWrapper title="Top Affected Locations" description="Tweet volume with severity-based color and top disaster.">
+        {/* Top 10 Affected Locations */}
+        <ChartWrapper title="Top 10 Affected Locations" description="Tweet volume with severity-based color and top disaster.">
           {selectedTypes.length && filteredAffectedLocations.length ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={shortenedLocations} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="shortLabel" type="category" width={100} />
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (active && payload?.length) {
-                      const d = payload[0].payload;
-                      return (
-                        <div style={{ background: "#fff", padding: "12px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
-                          <strong>{label}</strong>
-                          <p>Top Disaster: {d.topDisaster}</p>
-                          <p>Tweet Count: {d.tweets}</p>
-                          <p>Avg. Severity: {d.avgSeverity}</p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar dataKey="tweets">
-                  {shortenedLocations.map((entry, i) => {
-                    let fill = "#66CC66"; // low
-                    if (entry.avgSeverity >= 7) fill = "#FF6666"; // high
-                    else if (entry.avgSeverity >= 4) fill = "#FFCC33"; // moderate
-                    return <Cell key={i} fill={fill} />;
-                  })}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <>
+              {/* Chart */}
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={shortenedLocations} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="shortLabel" type="category" width={100} tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    content={({ active, payload, label }) => {
+                      if (active && payload?.length) {
+                        const d = payload[0].payload;
+                        return (
+                          <div style={{ background: "#fff", padding: "12px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+                            <strong>{label}</strong>
+                            <p>Top Disaster: {d.topDisaster}</p>
+                            <p>Tweet Count: {d.tweets}</p>
+                            <p>Avg. Severity: {d.avgSeverity}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="tweets">
+                    {shortenedLocations.map((entry, i) => {
+                      let fill = "#66CC66"; // low
+                      if (entry.avgSeverity >= 7) fill = "#FF6666"; // high
+                      else if (entry.avgSeverity >= 4) fill = "#FFCC33"; // moderate
+                      return <Cell key={i} fill={fill} />;
+                    })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              {/* Custom Severity Key */}
+                <div style={{ display: "flex", justifyContent: "center", gap: "16px", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", fontSize: 13 }}>
+                    <div style={{ width: 12, height: 12, backgroundColor: "#66CC66", marginRight: 6, borderRadius: 2 }}></div>
+                    Low
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", fontSize: 13 }}>
+                    <div style={{ width: 12, height: 12, backgroundColor: "#FFCC33", marginRight: 6, borderRadius: 2 }}></div>
+                    Moderate
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", fontSize: 13 }}>
+                    <div style={{ width: 12, height: 12, backgroundColor: "#FF6666", marginRight: 6, borderRadius: 2 }}></div>
+                    High
+                  </div>
+                </div>
+              </>
           ) : <NoDataMessage />}
         </ChartWrapper>
 
         {/* Severity Distribution */}
         <ChartWrapper title="Severity Distribution" description="Stacked bars show tweet severity levels per disaster type.">
           {selectedTypes.length && severityByDisasterType.length ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={severityByDisasterType}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="type" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Low" stackId="a" fill="#66CC66" />
-                <Bar dataKey="Moderate" stackId="a" fill="#FFCC33" />
-                <Bar dataKey="High" stackId="a" fill="#FF6666" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="chart-wrapper-with-nav">
+              <div className="chart-nav-top-right">
+                <button
+                  onClick={() => setSeverityPage(prev => Math.max(prev - 1, 0))}
+                  disabled={severityPage === 0}
+                  className="chart-nav-btn"
+                >
+                  &#8592;
+                </button>
+                <button
+                  onClick={() => setSeverityPage(prev =>
+                    (prev + 1) * typesPerPage < severityByDisasterType.length ? prev + 1 : prev
+                  )}
+                  disabled={(severityPage + 1) * typesPerPage >= severityByDisasterType.length}
+                  className="chart-nav-btn"
+                >
+                  &#8594;
+                </button>
+              </div>
+
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={pagedSeverityData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="type" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="Low" stackId="a" fill="#66CC66" />
+                  <Bar dataKey="Moderate" stackId="a" fill="#FFCC33" />
+                  <Bar dataKey="High" stackId="a" fill="#FF6666" />
+                </BarChart>
+              </ResponsiveContainer>
+
+              {/* Custom Legend */}
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 12, gap: 20, fontSize: 12 }}>
+                <div style={{ display: "flex", alignItems: "center" }}><div style={{ backgroundColor: "#66CC66", width: 10, height: 10, marginRight: 6 }} />Low</div>
+                <div style={{ display: "flex", alignItems: "center" }}><div style={{ backgroundColor: "#FFCC33", width: 10, height: 10, marginRight: 6 }} />Moderate</div>
+                <div style={{ display: "flex", alignItems: "center" }}><div style={{ backgroundColor: "#FF6666", width: 10, height: 10, marginRight: 6 }} />High</div>
+              </div>
+            </div>
           ) : <NoDataMessage />}
         </ChartWrapper>
       </div>
