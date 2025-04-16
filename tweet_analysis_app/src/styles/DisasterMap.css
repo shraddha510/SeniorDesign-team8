@@ -143,3 +143,44 @@
     color: #666;
     font-style: italic;
 }
+
+.date-filter-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #333;
+}
+
+.apply-filter-btn {
+    height: 35px;
+    padding: 0 15px;
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s ease;
+}
+
+.apply-filter-btn:hover {
+    background-color: #1476d4;
+}
+
+.filter-title {
+    font-weight: 600;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    margin-right: 10px;
+}

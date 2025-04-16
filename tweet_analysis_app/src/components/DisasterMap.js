@@ -156,6 +156,7 @@ function HeatmapLayer({ disasters }) {
                     <p class="popup-detail"><strong>Severity:</strong> ${closestDisaster.severity_score || 'Unknown'}/10</p>
                     <p class="popup-detail"><strong>Location:</strong> ${closestDisaster.location || 'Unknown'}</p>
                     <p class="popup-detail"><strong>Number of Tweets:</strong> ${closestDisaster.tweet_count}</p>
+                    <p class="popup-detail"><strong>Date:</strong> ${closestDisaster.timestamp ? new Date(closestDisaster.timestamp).toLocaleDateString() : 'Unknown'}</p>
                 `;
                 } else {
                     container.innerHTML = `
@@ -177,14 +178,104 @@ function HeatmapLayer({ disasters }) {
 }
 
 /**
+ * Date range picker component for filtering disaster data
+ */
+function DateRangeFilter({ startDate, endDate, onStartDateChange, onEndDateChange, onApplyFilter }) {
+    return (
+        <div className="date-filter-container">
+            <div className="filter-title">Filter by Date:</div>
+            <div className="date-input-group">
+                <label htmlFor="start-date">From:</label>
+                <input
+                    type="date"
+                    id="start-date"
+                    value={startDate}
+                    onChange={(e) => onStartDateChange(e.target.value)}
+                />
+            </div>
+            <div className="date-input-group">
+                <label htmlFor="end-date">To:</label>
+                <input
+                    type="date"
+                    id="end-date"
+                    value={endDate}
+                    onChange={(e) => onEndDateChange(e.target.value)}
+                />
+            </div>
+            <button className="apply-filter-btn" onClick={onApplyFilter}>
+                Apply
+            </button>
+        </div>
+    );
+}
+
+/**
  * Main disaster map component
  * Fetches data and renders map with heatmap layer
  */
 const DisasterMap = () => {
     const [disasters, setDisasters] = useState([]);
+    const [filteredDisasters, setFilteredDisasters] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTable] = useState('multiprocessing_gen_ai_output');
+
+    // Calculate default date range (one week ago to today)
+    const getDefaultDates = () => {
+        const today = new Date();
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        // Format dates as YYYY-MM-DD for input elements
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        return {
+            startDate: formatDate(oneWeekAgo),
+            endDate: formatDate(today)
+        };
+    };
+
+    const defaultDates = getDefaultDates();
+
+    // State for date filtering with dynamic defaults
+    const [startDate, setStartDate] = useState(defaultDates.startDate);
+    const [endDate, setEndDate] = useState(defaultDates.endDate);
+    const [appliedStartDate, setAppliedStartDate] = useState(defaultDates.startDate);
+    const [appliedEndDate, setAppliedEndDate] = useState(defaultDates.endDate);
+
+    // Handle filter application
+    const handleApplyFilter = () => {
+        setAppliedStartDate(startDate);
+        setAppliedEndDate(endDate);
+    };
+
+    // Filter disasters based on date range
+    useEffect(() => {
+        if (disasters.length === 0) {
+            setFilteredDisasters([]);
+            return;
+        }
+
+        const filtered = disasters.filter(disaster => {
+            if (!disaster.timestamp) return false;
+
+            const disasterDate = new Date(disaster.timestamp);
+            const startDateObj = new Date(appliedStartDate);
+            const endDateObj = new Date(appliedEndDate);
+
+            // Set end date to end of day for inclusive filtering
+            endDateObj.setHours(23, 59, 59, 999);
+
+            return disasterDate >= startDateObj && disasterDate <= endDateObj;
+        });
+
+        setFilteredDisasters(filtered);
+    }, [disasters, appliedStartDate, appliedEndDate]);
 
     // Fetch disaster data from Supabase
     useEffect(() => {
@@ -263,6 +354,21 @@ const DisasterMap = () => {
         <div className="map-container">
             <h2 className="map-title">Disaster Risk Heatmap</h2>
 
+            {/* Date filter component */}
+            <DateRangeFilter
+                startDate={startDate}
+                endDate={endDate}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+                onApplyFilter={handleApplyFilter}
+            />
+
+            {/* Filter status display */}
+            <div className="filter-status">
+                Showing disasters from {new Date(appliedStartDate).toLocaleDateString()} to {new Date(appliedEndDate).toLocaleDateString()}
+                {filteredDisasters.length > 0 ? ` (${filteredDisasters.length} events)` : ''}
+            </div>
+
             {/* Map instruction banner */}
             <div className="map-instructions">
                 <div className="info-icon">i</div>
@@ -293,7 +399,7 @@ const DisasterMap = () => {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     />
                     <ZoomControl position="bottomright" />
-                    <HeatmapLayer disasters={disasters} />
+                    <HeatmapLayer disasters={filteredDisasters} />
                 </MapContainer>
             )}
 
