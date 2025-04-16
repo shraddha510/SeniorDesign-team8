@@ -180,31 +180,36 @@ function HeatmapLayer({ disasters }) {
 /**
  * Date range picker component for filtering disaster data
  */
-function DateRangeFilter({ startDate, endDate, onStartDateChange, onEndDateChange, onApplyFilter }) {
+function DateRangeFilter({ startDate, endDate, onStartDateChange, onEndDateChange, onApplyFilter, filteredCount }) {
     return (
-        <div className="date-filter-container">
-            <div className="filter-title">Filter by Date:</div>
-            <div className="date-input-group">
-                <label htmlFor="start-date">From:</label>
-                <input
-                    type="date"
-                    id="start-date"
-                    value={startDate}
-                    onChange={(e) => onStartDateChange(e.target.value)}
-                />
+        <div className="filter-container">
+            <div className="filter-row">
+                <div className="filter-label">Filter by Date:</div>
+                <div className="date-fields">
+                    <div className="date-field">
+                        <label htmlFor="start-date">Start Date:</label>
+                        <input
+                            type="date"
+                            id="start-date"
+                            value={startDate}
+                            onChange={(e) => onStartDateChange(e.target.value)}
+                        />
+                    </div>
+                    <div className="date-field">
+                        <label htmlFor="end-date">End Date:</label>
+                        <input
+                            type="date"
+                            id="end-date"
+                            value={endDate}
+                            onChange={(e) => onEndDateChange(e.target.value)}
+                        />
+                    </div>
+                </div>
+                <button className="apply-button" onClick={onApplyFilter}>
+                    Apply
+                </button>
             </div>
-            <div className="date-input-group">
-                <label htmlFor="end-date">To:</label>
-                <input
-                    type="date"
-                    id="end-date"
-                    value={endDate}
-                    onChange={(e) => onEndDateChange(e.target.value)}
-                />
-            </div>
-            <button className="apply-filter-btn" onClick={onApplyFilter}>
-                Apply
-            </button>
+            {/* Removed the filter status from here since it appears to be duplicated elsewhere */}
         </div>
     );
 }

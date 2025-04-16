@@ -1,186 +1,261 @@
-/* Map Container Styles */
+/* DisasterMap.css - Updated with Date Filter Styles */
+
+/* Main map container */
 .map-container {
-    padding-top: 20px;
-    padding-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-    z-index: 500;
-    padding-left: 0;
-    padding-right: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
 .map-title {
-    text-align: center;
-    font-size: 25px;
+    margin-top: 0;
     margin-bottom: 20px;
-    color: #0A2A4A;
+    color: #333;
+    text-align: center;
 }
 
-/* Map Instructions */
+/* Map instructions */
 .map-instructions {
-    padding: 10px;
-    background-color: #e6f7ff;
-    border-left: 4px solid #1890ff;
-    margin-bottom: 15px;
-    border-radius: 4px;
     display: flex;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    border-left: 4px solid #3498db;
 }
 
 .info-icon {
-    margin-right: 10px;
-    background-color: #1890ff;
+    background-color: #3498db;
     color: white;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 10px;
     font-weight: bold;
+    font-style: italic;
 }
 
-.map-instructions kbd {
+kbd {
     background-color: #f1f1f1;
-    border: 1px solid #ccc;
+    border: 1px solid #d3d3d3;
     border-radius: 3px;
-    padding: 1px 5px;
-    font-family: monospace;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+    color: #333;
+    display: inline-block;
+    font-size: 0.85em;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 5px;
+    white-space: nowrap;
 }
 
-/* Loading and Error States */
-.loading-container {
-    padding: 20px;
-    text-align: center;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    margin: 20px 0;
-}
-
-.loading-container p {
-    font-size: 18px;
-}
-
-.error-container {
-    padding: 20px;
-    text-align: center;
-    background-color: #fff0f0;
-    border-radius: 10px;
-    margin: 20px 0;
-    border: 1px solid #ffcccc;
-}
-
-.error-container p {
-    font-size: 18px;
-    color: #cc0000;
-}
-
-/* Map Styling */
+/* The map itself */
 .disaster-map {
-    height: 600px;
+    height: 650px;
+    /* Increased height for a wider screen appearance */
     width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    z-index: 1;
 }
 
-/* Legend Styles */
+/* Map legend */
 .map-legend {
     background: white;
-    border-radius: 8px;
     padding: 15px;
-    margin-top: 30px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    font-family: 'Inter', sans-serif;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+.map-legend h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
 }
 
 .gradient-bar {
-    background: linear-gradient(to right, #3498db, #2ecc71, #f1c40f, #e67e22, #e74c3c);
-    height: 20px;
+    height: 10px;
     width: 100%;
-    margin-bottom: 10px;
+    background: linear-gradient(to right, blue, green, yellow, orange, red);
+    margin-bottom: 5px;
+    border-radius: 2px;
 }
 
 .legend-labels {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    font-weight: bold;
-    margin-top: 5px;
+    color: #666;
+    margin-bottom: 10px;
 }
 
 .legend-tip {
     font-size: 12px;
+    color: #666;
     font-style: italic;
-    color: #555;
-    margin-top: 10px;
-    text-align: center;
+    margin: 0;
 }
 
-/* Popup Styles */
+/* Loading and error states */
+.loading-container,
+.error-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 500px;
+    width: 100%;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px dashed #ddd;
+}
+
+.error-container {
+    color: #dc3545;
+}
+
+/* Popup styles */
 .disaster-popup {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 14px;
-    padding-top: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    font-size: 16px;
+    padding: 10px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    max-width: 300px;
 }
 
 .disaster-popup h4 {
-    font-size: 18px;
-    margin-bottom: 8px;
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
 }
 
 .popup-detail {
-    font-size: 16px;
-    color: #333;
-    margin: 4px 0;
+    margin: 5px 0;
+    font-size: 14px;
+    color: #666;
 }
 
 .popup-subtext {
+    font-size: 12px;
+    font-style: italic;
+    color: #888;
+    margin: 5px 0 0 0;
+}
+
+/* Filter Container Styles */
+.filter-container {
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-label {
+    font-weight: 500;
     font-size: 14px;
+    color: #333;
+    margin-right: 10px;
+}
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.date-fields {
+    display: flex;
+    gap: 20px;
+    flex-grow: 1;
+    max-width: 600px;
+}
+
+.date-field {
+    display: flex;
+    align-items: center;
+}
+
+.date-field label {
+    margin-right: 10px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.date-field input[type="date"] {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 160px;
+}
+
+.apply-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.apply-button:hover {
+    background-color: #2980b9;
+}
+
+.filter-status {
+    font-size: 13px;
     color: #666;
     font-style: italic;
 }
 
-.date-filter-container {
-    display: flex;
-    align-items: flex-end;
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 15px;
-}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-.date-input-group {
-    display: flex;
-    flex-direction: column;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: #333;
-}
+    .date-fields {
+        flex-direction: column;
+        width: 100%;
+        margin: 10px 0;
+        gap: 10px;
+    }
 
-.apply-filter-btn {
-    height: 35px;
-    padding: 0 15px;
-    background-color: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    transition: background-color 0.3s ease;
-}
+    .date-field {
+        width: 100%;
+        justify-content: space-between;
+    }
 
-.apply-filter-btn:hover {
-    background-color: #1476d4;
-}
+    .date-field input[type="date"] {
+        flex-grow: 1;
+    }
 
-.filter-title {
-    font-weight: 600;
-    font-size: 16px;
-    font-family: 'Inter', sans-serif;
-    margin-right: 10px;
+    .apply-button {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .filter-label {
+        margin-bottom: 10px;
+    }
 }
