@@ -39,8 +39,8 @@ def fetch_from_supabase(input_date):
         supabase
         .table("bluesky_api_data")
         .select("*")
-        .gte("timestamp", f"{input_date}T00:00:00+00:00")
-        .lt("timestamp", f"{input_date}T23:59:59+00:00")
+        .gte("timestamp", f"{input_date}T09:00:00+00:00")
+        .lt("timestamp", f"{input_date}T015:59:59+00:00")
         .execute()
     )
 
@@ -243,23 +243,42 @@ def get_location_data(city_name):
         return response.json()[0]
     return {}
 
-def enrich_location():
+def enrich_location(input_date):
     supabase = get_supabase_client()
-    response = supabase.table("multiprocessing_gen_ai_output").select("*").execute()
+    # Select only records where latitude IS NULL and location is potentially valid
+    # AND timestamp matches the input_date
+    start_timestamp = f"{input_date}T09:00:00+00:00"
+    end_timestamp = f"{input_date}T15:59:59+00:00"
+ 
+    response = (
+        supabase.table("multiprocessing_gen_ai_output")
+        .select("tweet_id, location")  # Only select needed columns
+        .gte("timestamp", start_timestamp) # Filter by date start
+        .lt("timestamp", end_timestamp)   # Filter by date end
+        .is_("latitude", "null")       # Filter for null latitude
+        .neq("location", "None")       # Filter out invalid locations
+        .neq("location", "not specified")
+        .execute()
+    )
     records = response.data
+
+    if not records:
+        print(f"No records found needing geocoding for date {input_date}.")
+        return
     
+    print(f"Found {len(records)} records to geocode for date {input_date}.")
+
     for record in records:
         tweet_id = record['tweet_id']
         location = record['location']
         
-        if location != "None" and location.lower() != "not specified":
-            latitude, longitude = None, None
-            location_data = get_location_data(location)
+        latitude, longitude = None, None
+        location_data = get_location_data(location)
+        
+        if location_data:
+            latitude = float(location_data.get('lat')) if location_data.get('lat') else None
+            longitude = float(location_data.get('lon')) if location_data.get('lon') else None
             
-            if location_data:
-                latitude = float(location_data.get('lat')) if location_data.get('lat') else None
-                longitude = float(location_data.get('lon')) if location_data.get('lon') else None
-                
             if not latitude:
                 location_parts = re.split(r", | and ", location)
                 first_item = location_parts[0]
@@ -313,5 +332,5 @@ if __name__ == "__main__":
         end = start + 99
         time.sleep(30)  # Reduced sleep time
     
-    enrich_location()
+    enrich_location(input_date)
     print("Database updated successfully!")

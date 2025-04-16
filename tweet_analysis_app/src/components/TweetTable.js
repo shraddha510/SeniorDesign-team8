@@ -5,33 +5,37 @@ import { supabase } from '../supabase';
 const TopTweetsTable = () => {
   const [tweets, setTweets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
     const fetchTweets = async () => {
       try {
-        console.log('Fetching tweets from Supabase...');
-        
-        //  Check if we can get any data at all
-        const { data: allData, error: allDataError } = await supabase
-          .from('multiprocessing_gen_ai_output')
-          .select('*')
-          .limit(1);
+        // Get current year and set the target date to April 15th
+        const currentYear = new Date().getFullYear();
+        const targetDate = new Date(currentYear, 3, 15); // Month is 0-indexed, so 3 is April
 
-        if (allDataError) {
-          console.error('Error fetching all data:', allDataError);
-          throw allDataError;
-        }
+        const formattedDate = targetDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        setCurrentDate(formattedDate);
 
-        console.log('Sample of all data:', allData);
+        // Calculate start and end of the target day (April 15th)
+        const startOfDay = new Date(targetDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(targetDate);
+        endOfDay.setHours(23, 59, 59, 999);
 
-        // Use specific query - filtering for genuine disasters with non-null severity scores 
-        // and sorting by severity_score in descending order
+        console.log('Fetching tweets from Supabase for date:', formattedDate);
+        console.log('Querying between:', startOfDay.toISOString(), 'and', endOfDay.toISOString());
+
+        // Use specific query - filtering for genuine disasters with non-null severity scores
+        // for the current day, and sorting by severity_score in descending order
         const { data, error } = await supabase
           .from('multiprocessing_gen_ai_output')
           .select('*')
           .eq('genuine_disaster', true)
           .not('severity_score', 'is', null)
           .neq('severity_score', 'None')
+          .gte('timestamp', startOfDay.toISOString()) // Filter for today start
+          .lte('timestamp', endOfDay.toISOString())   // Filter for today end
           .order('severity_score', { ascending: false })
           .limit(10);
 
@@ -92,8 +96,8 @@ const TopTweetsTable = () => {
 
   return (
     <div className="table-container">
-      <h2 className="table-title">Top 10 Disaster Posts Across The World</h2>
-      <p className="table-subtitle">Genuine disasters ranked by severity score</p>
+      <h2 className="table-title">Top 10 Severe Disaster Posts for {currentDate}</h2>
+      <p className="table-subtitle">Genuine disasters for {currentDate} ranked by severity score</p>
 
       <table className="tweets-table">
         <thead>

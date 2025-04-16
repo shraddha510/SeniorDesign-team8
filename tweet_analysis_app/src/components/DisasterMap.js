@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -218,7 +218,6 @@ function DateRangeFilter({ startDate, endDate, onStartDateChange, onEndDateChang
  */
 const DisasterMap = () => {
     const [disasters, setDisasters] = useState([]);
-    const [filteredDisasters, setFilteredDisasters] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTable] = useState('multiprocessing_gen_ai_output');
@@ -251,71 +250,20 @@ const DisasterMap = () => {
     const [appliedStartDate, setAppliedStartDate] = useState(defaultDates.startDate);
     const [appliedEndDate, setAppliedEndDate] = useState(defaultDates.endDate);
 
-    // Handle filter application
+    // Handle filter application - triggers useEffect below
     const handleApplyFilter = () => {
         setAppliedStartDate(startDate);
         setAppliedEndDate(endDate);
     };
 
-    // Filter disasters based on date range
-    useEffect(() => {
-        if (disasters.length === 0) {
-            setFilteredDisasters([]);
-            return;
-        }
-
-        const filtered = disasters.filter(disaster => {
-            if (!disaster.timestamp) return false;
-
-            const disasterDate = new Date(disaster.timestamp);
-            const startDateObj = new Date(appliedStartDate);
-            const endDateObj = new Date(appliedEndDate);
-
-            // Set end date to end of day for inclusive filtering
-            endDateObj.setHours(23, 59, 59, 999);
-
-            return disasterDate >= startDateObj && disasterDate <= endDateObj;
-        });
-
-        setFilteredDisasters(filtered);
-    }, [disasters, appliedStartDate, appliedEndDate]);
-
-    // Fetch disaster data from Supabase
-    useEffect(() => {
-        const fetchDisasterData = async () => {
-            setIsLoading(true);
-            try {
-                const { data, error } = await supabase
-                    .from(activeTable)
-                    .select('*');
-
-                if (error) {
-                    setError(error);
-                    setIsLoading(false);
-                    return;
-                }
-
-                if (!data || data.length === 0) {
-                    setDisasters([]);
-                    setIsLoading(false);
-                    return;
-                }
-
-                processData(data);
-                setIsLoading(false);
-            } catch (err) {
-                setError(err);
-                setIsLoading(false);
-            }
-        };
-
-        // Process data and group similar disasters
-        const processData = (data) => {
+    // Process data and group similar disasters (wrapped in useCallback)
+    const processData = useCallback((data) => {
             const grouped = {}; // Initialize 'dictionary'
 
             data.forEach(disaster => {
                 // Skip entries with missing essential data
-                if (!disaster.disaster_type || !disaster.location) return;
+                // Add check for timestamp as it's now crucial for filtering/display
+                if (!disaster.disaster_type || !disaster.location || !disaster.timestamp) return;
 
                 const lat = parseFloat(disaster.latitude);
                 const lng = parseFloat(disaster.longitude);
@@ -329,29 +277,73 @@ const DisasterMap = () => {
 
                 // Check if we already have a group with this key
                 if (grouped[key]) {
-                    // Add to existing group - update severity if needed
+                    // Add to existing group - update severity if higher
                     const currentSeverity = parseFloat(disaster.severity_score);
-                    if (currentSeverity > grouped[key].severity_score) {
+                    if (!isNaN(currentSeverity) && currentSeverity > (grouped[key].severity_score || 0)) {
                         grouped[key].severity_score = currentSeverity;
                     }
-                    grouped[key].tweet_count += 1;
+                    // Update timestamp to the latest within the group
+                    if (new Date(disaster.timestamp) > new Date(grouped[key].timestamp)) {
+                        grouped[key].timestamp = disaster.timestamp;
+                    }
+                    grouped[key].tweet_count = (grouped[key].tweet_count || 0) + 1; // Ensure tweet_count is incremented safely
                 } else {
                     // Create new group
                     grouped[key] = {
                         ...disaster,
-                        severity_score: parseFloat(disaster.severity_score),
+                        severity_score: parseFloat(disaster.severity_score) || 0, // Default severity to 0 if invalid/missing
                         latitude: lat,
                         longitude: lng,
                         tweet_count: 1
                     };
                 }
             });
+            setDisasters(Object.values(grouped)); // Update the main disasters state
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // setDisasters is stable
 
-            setDisasters(Object.values(grouped));
-        };
+    // Fetch disaster data from Supabase based on date range (wrapped in useCallback)
+    const fetchDisasterData = useCallback(async (start, end) => {
+        setIsLoading(true);
+        setError(null); // Reset error state on new fetch
+        try {
+            // Ensure end date includes the entire day for filtering
+            const endOfDay = end + 'T23:59:59.999Z';
 
-        fetchDisasterData();
-    }, [activeTable]);
+            const { data, error: fetchError } = await supabase
+                .from(activeTable)
+                .select('*')
+                .gte('timestamp', start) // Filter greater than or equal to start date
+                .lte('timestamp', endOfDay); // Filter less than or equal to end date (end of day)
+
+            if (fetchError) {
+                console.error("Supabase fetch error:", fetchError);
+                setError(fetchError);
+                setDisasters([]); // Clear data on error
+                setIsLoading(false);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                setDisasters([]); // No data found for the range
+                setIsLoading(false);
+                return;
+            }
+
+            processData(data); // Process the fetched data
+            setIsLoading(false);
+        } catch (err) {
+            console.error("Error fetching or processing data:", err);
+            setError(err);
+            setDisasters([]); // Clear data on catch
+            setIsLoading(false);
+        }
+    }, [activeTable, processData]); // Dependencies for useCallback
+
+    // Fetch data effect - runs on mount and when applied dates change
+    useEffect(() => {
+        fetchDisasterData(appliedStartDate, appliedEndDate);
+    }, [appliedStartDate, appliedEndDate, fetchDisasterData]);
 
     return (
         <div className="map-container">
@@ -368,8 +360,8 @@ const DisasterMap = () => {
 
             {/* Filter status display */}
             <div className="filter-status">
-                Showing disasters from {new Date(appliedStartDate).toLocaleDateString()} to {new Date(appliedEndDate).toLocaleDateString()}
-                {filteredDisasters.length > 0 ? ` (${filteredDisasters.length} events)` : ''}
+                Showing disasters from {new Date(appliedStartDate + 'T00:00:00').toLocaleDateString()} to {new Date(appliedEndDate + 'T00:00:00').toLocaleDateString()}
+                {disasters.length > 0 ? ` (${disasters.length} events)` : ''}
             </div>
 
             {/* Map instruction banner */}
@@ -402,7 +394,7 @@ const DisasterMap = () => {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     />
                     <ZoomControl position="bottomright" />
-                    <HeatmapLayer disasters={filteredDisasters} />
+                    <HeatmapLayer disasters={disasters} />
                 </MapContainer>
             )}
 
