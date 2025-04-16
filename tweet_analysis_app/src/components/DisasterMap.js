@@ -151,12 +151,21 @@ function HeatmapLayer({ disasters }) {
             const container = infoControlRef.current?._container;
             if (container) {
                 if (closestDisaster) {
+                    // Format date using UTC methods to avoid local timezone conversion
+                    const displayDate = closestDisaster.timestamp ? 
+                        new Date(closestDisaster.timestamp).toLocaleDateString('en-US', { 
+                            timeZone: 'UTC', 
+                            year: 'numeric', 
+                            month: 'numeric', 
+                            day: 'numeric' 
+                        }) : 'Unknown';
+
                     container.innerHTML = `
                     <h4>${toTitleCase(closestDisaster.disaster_type || 'Unknown Disaster')}</h4>
                     <p class="popup-detail"><strong>Severity:</strong> ${closestDisaster.severity_score || 'Unknown'}/10</p>
                     <p class="popup-detail"><strong>Location:</strong> ${closestDisaster.location || 'Unknown'}</p>
                     <p class="popup-detail"><strong>Number of Tweets:</strong> ${closestDisaster.tweet_count}</p>
-                    <p class="popup-detail"><strong>Date:</strong> ${closestDisaster.timestamp ? new Date(closestDisaster.timestamp).toLocaleDateString() : 'Unknown'}</p>
+                    <p class="popup-detail"><strong>Date:</strong> ${displayDate}</p>
                 `;
                 } else {
                     container.innerHTML = `
@@ -307,14 +316,17 @@ const DisasterMap = () => {
         setIsLoading(true);
         setError(null); // Reset error state on new fetch
         try {
-            // Ensure end date includes the entire day for filtering
-            const endOfDay = end + 'T23:59:59.999Z';
+            // Construct UTC start and end timestamps precisely
+            const utcStart = start + 'T00:00:00.000Z'; // Start of the selected day in UTC
+            const utcEnd = end + 'T23:59:59.999Z';   // End of the selected day in UTC
+
+            console.log(`Fetching data from ${utcStart} to ${utcEnd}`); // Log the exact query range
 
             const { data, error: fetchError } = await supabase
                 .from(activeTable)
                 .select('*')
-                .gte('timestamp', start) // Filter greater than or equal to start date
-                .lte('timestamp', endOfDay); // Filter less than or equal to end date (end of day)
+                .gte('timestamp', utcStart) // Filter >= start date (UTC)
+                .lte('timestamp', utcEnd);   // Filter <= end date (UTC)
 
             if (fetchError) {
                 console.error("Supabase fetch error:", fetchError);
