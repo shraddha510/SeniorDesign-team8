@@ -39,8 +39,8 @@ def fetch_from_supabase(input_date):
         supabase
         .table("bluesky_api_data")
         .select("*")
-        .gte("timestamp", f"{input_date}T09:00:00+00:00")
-        .lt("timestamp", f"{input_date}T015:59:59+00:00")
+        .gte("timestamp", f"{input_date}T00:00:00+00:00")
+        .lt("timestamp", f"{input_date}T23:59:59+00:00")
         .execute()
     )
 
@@ -247,8 +247,8 @@ def enrich_location(input_date):
     supabase = get_supabase_client()
     # Select only records where latitude IS NULL and location is potentially valid
     # AND timestamp matches the input_date
-    start_timestamp = f"{input_date}T09:00:00+00:00"
-    end_timestamp = f"{input_date}T15:59:59+00:00"
+    start_timestamp = f"{input_date}T00:00:00+00:00"
+    end_timestamp = f"{input_date}T23:59:59+00:00"
  
     response = (
         supabase.table("multiprocessing_gen_ai_output")
