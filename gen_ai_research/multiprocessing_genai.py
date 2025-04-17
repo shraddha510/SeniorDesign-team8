@@ -9,14 +9,10 @@ from pydantic import BaseModel, Field
 from supabase import create_client, Client
 from llm import OllamaClient, Model
 from multiprocessing import Pool
+from datetime import date
 
 llm = Model.LLAMA_3_2
 client = OllamaClient(llm)
-
-def get_user_inputs():
-    # Get user inputs
-    input_date = input("Enter the input date (yyyy-mm-dd): ").strip()
-    return input_date
 
 def get_supabase_client():
     # Get Supabase credentials from environment variables
@@ -312,8 +308,8 @@ def enrich_location(input_date):
 # ---------------------------- Run All ----------------------------
 
 if __name__ == "__main__":
-    load_dotenv()  # Load environment variables from .env file
-    input_date = get_user_inputs()
+    input_date = date.today().strftime("%Y-%m-%d")
+    print(f"Using today's date: {input_date}")
     row_count, tweet_list = fetch_from_supabase(input_date)
     
     start = 1
