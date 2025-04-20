@@ -2,6 +2,12 @@ import React, {useState, useEffect} from 'react';
 import '../styles/RecentWatch.css';
 import {supabase} from '../supabase.js';
 
+// Helper function to capitalize the first letter of each word
+const capitalizeWords = (str) => {
+    if (!str) return '';
+    return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+};
+
 export const RecentWatch = ({className}) => {
     const [tweets, setTweets] = useState([]);
     const [selectedDisaster, setSelectedDisaster] = useState(null);
@@ -132,8 +138,16 @@ export const RecentWatch = ({className}) => {
                                     >
                                         <option value="">Select</option>
                                         {[...new Set(tweets.filter(t=>t).map(tweet => tweet.disaster_type.toLowerCase()))]
-                                            .map(disasterType => (
-                                                <option key={disasterType} value={disasterType}>{disasterType}</option>))}
+                                            .sort() // Optional: sort alphabetically
+                                            .map(disasterType => {
+                                                // Remove leading/trailing quotes before capitalizing
+                                                const cleanedType = disasterType.replace(/^['"]|['"]$/g, '');
+                                                return (
+                                                    <option key={disasterType} value={disasterType}>
+                                                        {capitalizeWords(cleanedType)}
+                                                    </option>
+                                                );
+                                            })}
                                     </select>
                                 </div>
                                 
