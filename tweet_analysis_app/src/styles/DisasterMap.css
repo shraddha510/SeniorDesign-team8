@@ -1,5 +1,3 @@
-/* DisasterMap.css - Updated with Date Filter Styles */
-
 /* Main map container */
 .map-container {
     display: flex;
@@ -23,27 +21,31 @@
 /* Map instructions */
 .map-instructions {
     display: flex;
-    align-items: center;
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    font-size: 14px;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #f0f6ff;
     border-left: 4px solid #3498db;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .info-icon {
     background-color: #3498db;
     color: white;
-    width: 20px;
-    height: 20px;
+    font-weight: bold;
+    font-style: normal;
     border-radius: 50%;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 10px;
-    font-weight: bold;
-    font-style: italic;
+    font-size: 14px;
+    margin-top: 2px;
+    flex-shrink: 0;
 }
 
 kbd {
@@ -60,7 +62,7 @@ kbd {
     white-space: nowrap;
 }
 
-/* The map itself */
+/* Map */
 .disaster-map {
     height: 650px;
     /* Increased height for a wider screen appearance */
@@ -258,4 +260,54 @@ kbd {
     .filter-label {
         margin-bottom: 10px;
     }
+}
+
+.map-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.sidebar {
+    width: 320px;
+    min-width: 280px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+}
+
+.date-fields-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.date-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.date-field input[type="date"] {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 160px;
+}
+
+.map-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }

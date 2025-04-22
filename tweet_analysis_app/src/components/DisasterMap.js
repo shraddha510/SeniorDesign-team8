@@ -152,12 +152,12 @@ function HeatmapLayer({ disasters }) {
             if (container) {
                 if (closestDisaster) {
                     // Format date using UTC methods to avoid local timezone conversion
-                    const displayDate = closestDisaster.timestamp ? 
-                        new Date(closestDisaster.timestamp).toLocaleDateString('en-US', { 
-                            timeZone: 'UTC', 
-                            year: 'numeric', 
-                            month: 'numeric', 
-                            day: 'numeric' 
+                    const displayDate = closestDisaster.timestamp ?
+                        new Date(closestDisaster.timestamp).toLocaleDateString('en-US', {
+                            timeZone: 'UTC',
+                            year: 'numeric',
+                            month: 'numeric',
+                            day: 'numeric'
                         }) : 'Unknown';
 
                     container.innerHTML = `
@@ -267,48 +267,49 @@ const DisasterMap = () => {
 
     // Process data and group similar disasters (wrapped in useCallback)
     const processData = useCallback((data) => {
-            const grouped = {}; // Initialize 'dictionary'
+        const grouped = {}; // Initialize 'dictionary'
 
-            data.forEach(disaster => {
-                // Skip entries with missing essential data
-                // Add check for timestamp as it's now crucial for filtering/display
-                if (!disaster.disaster_type || !disaster.location || !disaster.timestamp) return;
+        data.forEach(disaster => {
+            // Skip entries with missing essential data
+            // Add check for timestamp
+            if (!disaster.disaster_type || !disaster.location || !disaster.timestamp) return;
 
-                const lat = parseFloat(disaster.latitude);
-                const lng = parseFloat(disaster.longitude);
-                if (isNaN(lat) || isNaN(lng)) return;
+            const lat = parseFloat(disaster.latitude);
+            const lng = parseFloat(disaster.longitude);
+            if (isNaN(lat) || isNaN(lng)) return;
 
-                // Clean up data and normalize type
-                const disasterType = disaster.disaster_type.trim().toLowerCase();
+            // Clean up data and normalize type
+            const disasterType = disaster.disaster_type.trim().toLowerCase();
 
-                // Create key using disaster type and rounded coordinates
-                const key = `${disasterType}_${lat.toFixed(1)}_${lng.toFixed(1)}`;
+            // Create key using disaster type and rounded coordinates
+            const dateOnly = new Date(disaster.timestamp).toISOString().split('T')[0];
+            const key = `${disasterType}_${lat.toFixed(1)}_${lng.toFixed(1)}_${dateOnly}`;
 
-                // Check if we already have a group with this key
-                if (grouped[key]) {
-                    // Add to existing group - update severity if higher
-                    const currentSeverity = parseFloat(disaster.severity_score);
-                    if (!isNaN(currentSeverity) && currentSeverity > (grouped[key].severity_score || 0)) {
-                        grouped[key].severity_score = currentSeverity;
-                    }
-                    // Update timestamp to the latest within the group
-                    if (new Date(disaster.timestamp) > new Date(grouped[key].timestamp)) {
-                        grouped[key].timestamp = disaster.timestamp;
-                    }
-                    grouped[key].tweet_count = (grouped[key].tweet_count || 0) + 1; // Ensure tweet_count is incremented safely
-                } else {
-                    // Create new group
-                    grouped[key] = {
-                        ...disaster,
-                        severity_score: parseFloat(disaster.severity_score) || 0, // Default severity to 0 if invalid/missing
-                        latitude: lat,
-                        longitude: lng,
-                        tweet_count: 1
-                    };
+            // Check if we already have a group with this key
+            if (grouped[key]) {
+                // Add to existing group - update severity if higher
+                const currentSeverity = parseFloat(disaster.severity_score);
+                if (!isNaN(currentSeverity) && currentSeverity > (grouped[key].severity_score || 0)) {
+                    grouped[key].severity_score = currentSeverity;
                 }
-            });
-            setDisasters(Object.values(grouped)); // Update the main disasters state
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+                // Update timestamp to the latest within the group
+                if (new Date(disaster.timestamp) > new Date(grouped[key].timestamp)) {
+                    grouped[key].timestamp = disaster.timestamp;
+                }
+                grouped[key].tweet_count = (grouped[key].tweet_count || 0) + 1; // Ensure tweet_count is incremented safely
+            } else {
+                // Create new group
+                grouped[key] = {
+                    ...disaster,
+                    severity_score: parseFloat(disaster.severity_score) || 0, // Default severity to 0 if invalid/missing
+                    latitude: lat,
+                    longitude: lng,
+                    tweet_count: 1
+                };
+            }
+        });
+        setDisasters(Object.values(grouped)); // Update the main disasters state
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // setDisasters is stable
 
     // Fetch disaster data from Supabase based on date range (wrapped in useCallback)
@@ -358,70 +359,88 @@ const DisasterMap = () => {
     }, [appliedStartDate, appliedEndDate, fetchDisasterData]);
 
     return (
-        <div className="map-container">
-            <h2 className="map-title">Disaster Risk Heatmap</h2>
+        <div className="map-wrapper">
+            {/* Sidebar */}
+            <div className="sidebar">
+                <h2 className="map-title">Disaster Risk Heatmap</h2>
 
-            {/* Date filter component */}
-            <DateRangeFilter
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={setStartDate}
-                onEndDateChange={setEndDate}
-                onApplyFilter={handleApplyFilter}
-            />
+                {/* Date filter component */}
+                <div className="date-fields-vertical">
+                    <div className="date-field">
+                        <label htmlFor="start-date">Start Date:</label>
+                        <input
+                            type="date"
+                            id="start-date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
+                    </div>
+                    <div className="date-field">
+                        <label htmlFor="end-date">End Date:</label>
+                        <input
+                            type="date"
+                            id="end-date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                        />
+                    </div>
+                    <button className="apply-button" onClick={handleApplyFilter}>
+                        Apply
+                    </button>
+                </div>
 
-            {/* Filter status display */}
-            <div className="filter-status">
-                Showing disasters from {new Date(appliedStartDate + 'T00:00:00').toLocaleDateString()} to {new Date(appliedEndDate + 'T00:00:00').toLocaleDateString()}
-                {disasters.length > 0 ? ` (${disasters.length} events)` : ''}
-            </div>
+                {/* Filter status */}
+                <div className="filter-status">
+                    Showing disasters from {new Date(appliedStartDate + 'T00:00:00').toLocaleDateString()} to {new Date(appliedEndDate + 'T00:00:00').toLocaleDateString()}
+                    {disasters.length > 0 ? ` (${disasters.length} events)` : ''}
+                </div>
 
-            {/* Map instruction banner */}
-            <div className="map-instructions">
-                <div className="info-icon">i</div>
-                <div>
-                    <strong>Map Navigation:</strong> Use <kbd>Ctrl</kbd> + Scroll to zoom the map. Regular scrolling will navigate the page.
+                {/* Legend */}
+                <div className="map-legend">
+                    <h3>Disaster Risk Legend</h3>
+                    <div className="gradient-bar"></div>
+                    <div className="legend-labels">
+                        <span>Low Risk</span>
+                        <span>High Risk</span>
+                    </div>
+                    <p className="legend-tip">Move your cursor over colored areas to see disaster details</p>
+                </div>
+
+                {/* Optional map instructions */}
+                <div className="map-instructions">
+                    <div className="info-icon">i</div>
+                    <div>
+                        <strong>Map Navigation:</strong> Use <kbd>Ctrl</kbd> + Scroll to zoom. Regular scroll moves the page.
+                    </div>
                 </div>
             </div>
 
-            {/* Loading state */}
-            {isLoading ? (
-                <div className="loading-container">
-                    <p>Loading disaster data...</p>
-                </div>
-            ) : error ? (
-                <div className="error-container">
-                    <p>Error loading data: {error.message || "Unknown error"}</p>
-                </div>
-            ) : (
-                <MapContainer
-                    center={[39.8283, -98.5795]}
-                    zoom={4}
-                    className="disaster-map"
-                    zoomControl={false}
-                    scrollWheelZoom={false}
-                >
-                    <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    <ZoomControl position="bottomright" />
-                    <HeatmapLayer disasters={disasters} />
-                </MapContainer>
-            )}
-
-            {/* Legend */}
-            <div className="map-legend">
-                <h3>Disaster Risk Legend</h3>
-                <div className="gradient-bar"></div>
-                <div className="legend-labels">
-                    <span>Low Risk</span>
-                    <span>High Risk</span>
-                </div>
-                <p className="legend-tip">Move your cursor over colored areas to see disaster details</p>
+            {/* Map area */}
+            <div className="map-section">
+                {isLoading ? (
+                    <div className="loading-container"><p>Loading disaster data...</p></div>
+                ) : error ? (
+                    <div className="error-container"><p>Error loading data: {error.message || "Unknown error"}</p></div>
+                ) : (
+                    <MapContainer
+                        center={[39.8283, -98.5795]}
+                        zoom={4}
+                        className="disaster-map"
+                        zoomControl={false}
+                        scrollWheelZoom={false}
+                    >
+                        <TileLayer
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        <ZoomControl position="bottomright" />
+                        <HeatmapLayer disasters={disasters} />
+                    </MapContainer>
+                )}
             </div>
         </div>
     );
+
 };
 
 export default DisasterMap;
