@@ -186,40 +186,6 @@ function HeatmapLayer({ disasters }) {
     return <ScrollHandler map={map} />;
 }
 
-/**
- * Date range picker component for filtering disaster data
- */
-function DateRangeFilter({ startDate, endDate, onStartDateChange, onEndDateChange, onApplyFilter, filteredCount }) {
-    return (
-        <div className="filter-container">
-            <div className="filter-row">
-                <div className="date-fields">
-                    <div className="date-field">
-                        <label htmlFor="start-date">Start Date:</label>
-                        <input
-                            type="date"
-                            id="start-date"
-                            value={startDate}
-                            onChange={(e) => onStartDateChange(e.target.value)}
-                        />
-                    </div>
-                    <div className="date-field">
-                        <label htmlFor="end-date">End Date:</label>
-                        <input
-                            type="date"
-                            id="end-date"
-                            value={endDate}
-                            onChange={(e) => onEndDateChange(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <button className="apply-button" onClick={onApplyFilter}>
-                    Apply
-                </button>
-            </div>
-        </div>
-    );
-}
 
 /**
  * Main disaster map component
@@ -271,8 +237,18 @@ const DisasterMap = () => {
 
         data.forEach(disaster => {
             // Skip entries with missing essential data
-            // Add check for timestamp
-            if (!disaster.disaster_type || !disaster.location || !disaster.timestamp) return;
+            const type = disaster.disaster_type?.trim().toLowerCase();
+            const location = disaster.location?.trim();
+            const severity = parseFloat(disaster.severity_score);
+
+            if (
+                !type ||
+                type === 'not specified' ||
+                type === 'unknown' ||
+                !location ||
+                !disaster.timestamp ||
+                isNaN(severity)
+            ) return;
 
             const lat = parseFloat(disaster.latitude);
             const lng = parseFloat(disaster.longitude);
@@ -301,7 +277,7 @@ const DisasterMap = () => {
                 // Create new group
                 grouped[key] = {
                     ...disaster,
-                    severity_score: parseFloat(disaster.severity_score) || 0, // Default severity to 0 if invalid/missing
+                    severity_score: severity,
                     latitude: lat,
                     longitude: lng,
                     tweet_count: 1
