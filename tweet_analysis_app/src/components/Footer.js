@@ -16,7 +16,8 @@ const Footer = () => {
   return (
     <footer style={footerStyle}>
       <p>&copy; {currentYear} BlueSky Disaster Analysis. All rights reserved.</p>
-      {/* Add more footer content here if needed, like links */}
+      <p>Disclaimer: The content of this website contains AI generated content that may not be accurate. Please verify the information before using it for any purpose.</p>
+      {}
     </footer>
   );
 };
