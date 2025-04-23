@@ -51,16 +51,25 @@ const Analytics = () => {
 
   // Filter dataset by selected types, date range, and severity
   const filteredData = useMemo(() => {
-    return disasterTrends
-      .filter(item => selectedTypes.length === 0 || selectedTypes.includes(item.type))
-      .filter(item => selectedLocations.length === 0 || selectedLocations.some(loc => loc.value === item.location))
-      .filter(item => {
-        const date = new Date(item.date);
-        const from = dateRange.from ? new Date(dateRange.from) : null;
-        const to = dateRange.to ? new Date(dateRange.to) : null;
-        return (!from || date >= from) && (!to || date <= to);
-      })
-      .filter(item => item.severity >= severityThreshold);
+    const filtered = disasterTrends
+    .filter(item => selectedTypes.length === 0 || selectedTypes.includes(item.type))
+    .filter(item => selectedLocations.length === 0 || selectedLocations.some(loc => loc.value === item.location))
+    .filter(item => {
+      const date = item.date;
+      const from = dateRange.from;
+      const to = dateRange.to;
+      return (!from || date >= from) && (!to || date <= to);
+    })
+    .filter(item => severityThreshold === 0 || (item.severity !== null && item.severity >= severityThreshold));
+
+  // debugging
+  console.log("Filtered Data Count:", filtered.length);
+  console.log("Selected Types:", selectedTypes);
+  console.log("Date Range:", dateRange);
+  console.log("Selected Locations:", selectedLocations);
+  console.log("Severity Threshold:", severityThreshold);
+
+  return filtered;
   }, [disasterTrends, selectedTypes, selectedLocations, dateRange, severityThreshold]);
 
   // Group tweets by date/type for line & stacked bar chart
@@ -84,21 +93,32 @@ const Analytics = () => {
     return affectedLocations
       .filter(item => selectedTypes.length === 0 || selectedTypes.includes(item.topDisaster))
       .filter(item => selectedLocations.length === 0 || selectedLocations.some(loc => loc.value === item.location))
-      .filter(item => item.avgSeverity >= severityThreshold);
-  }, [affectedLocations, selectedTypes, selectedLocations, severityThreshold]);
+      .filter(item => item.avgSeverity >= severityThreshold)
+      .filter(item => {
+        const date = item.lastDate;
+        const from = dateRange.from;
+        const to = dateRange.to;
+        return (!from || date >= from) && (!to || date <= to);
+      });
+  }, [affectedLocations, selectedTypes, selectedLocations, severityThreshold, dateRange]);
+  
 
   // Shorten long location labels for Y-axis
   const MAX_LABEL_LENGTH = 25;
   const shortenedLocations = useMemo(() => {
-    const sorted = [...filteredAffectedLocations].sort((a, b) => b.tweets - a.tweets);
-    const topN = sorted.slice(0, 10); // limit to top 10
+    const sorted = [...filteredAffectedLocations]
+      .filter(loc => loc.location && loc.location.trim() !== "") 
+      .sort((a, b) => b.tweets - a.tweets);
+      
+    const topN = sorted.slice(0, 10);
+  
     return topN.map((item) => ({
       ...item,
       shortLabel: item.location.length > MAX_LABEL_LENGTH
         ? item.location.slice(0, MAX_LABEL_LENGTH) + "..."
-        : item.location,
+        : item.location || "(Unknown Location)",
     }));
-  }, [filteredAffectedLocations]);
+  }, [filteredAffectedLocations]);  
   
   // Build severity counts per disaster type
   const severityByDisasterType = useMemo(() => {
@@ -141,12 +161,31 @@ const Analytics = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data, error } = await supabase
-        .from("multiprocessing_gen_ai_output")
-        .select("*")
-        .eq("genuine_disaster", true);
+      let allData = [];
+      let start = 0;
+      const chunkSize = 1000;
+      let done = false;
 
-      if (error) return console.error("Supabase Error:", error);
+      while (!done) {
+        const { data, error } = await supabase
+          .from("multiprocessing_gen_ai_output")
+          .select("*")
+          .eq("genuine_disaster", true)
+          .range(start, start + chunkSize - 1);
+      
+        if (error) {
+          console.error("Supabase Error:", error);
+          break;
+        }
+      
+        if (data.length === 0) {
+          done = true;
+        } else {
+          allData = allData.concat(data);
+          start += chunkSize;
+          if (data.length < chunkSize) done = true;
+        }
+      }
 
       const now = new Date();
       const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -175,7 +214,7 @@ const Analytics = () => {
       };
 
       // Process each tweet row
-      data.forEach((entry) => {
+      allData.forEach((entry) => {
         const timestamp = new Date(entry.timestamp);
         const type = normalizeDisasterType(entry.disaster_type);
         const severityVal = Number(entry.severity_score);
@@ -219,9 +258,12 @@ const Analytics = () => {
         loc.totalSeverity += severityVal;
         loc.count++;
         loc.topDisasterCount[type] = (loc.topDisasterCount[type] || 0) + 1;
+        loc.lastDate = dateStr; 
 
         if (dateStr === recentDate) recentTypes.add(type);
       });
+
+      console.log("Total processed disasterTrends:", trends.length);
 
       // Process location stats and update state
       setDisasterTrends(trends);
@@ -232,8 +274,9 @@ const Analytics = () => {
           tweets: loc.tweets,
           avgSeverity: +(loc.totalSeverity / loc.count).toFixed(1),
           topDisaster,
+          lastDate: loc.lastDate, 
         };
-      }));
+      }));      
       
       // Update KPI Stats
       setKPIStats({
