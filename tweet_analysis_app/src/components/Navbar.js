@@ -43,7 +43,7 @@ const Navbar = () => {
     return (
         <nav className="navbar">
             <div className="navbar-container">
-                <div className="logo" onClick={handleHomeNavigation} style={{ cursor: 'pointer' }}>Tweet Analysis</div>
+                <div className="logo" onClick={handleHomeNavigation} style={{ cursor: 'pointer' }}> Disaster Tweet Analysis</div>
                 <div className="nav-right">
                     <ul className="nav-links">
                         <li><a href="/" onClick={(e) => { e.preventDefault(); handleHomeNavigation(); }}>Home</a></li>

@@ -9,7 +9,7 @@ const Home = () => {
       <div className="content-wrapper">
         <div className="content-container">
           <div className="info-section">
-            <h1>Get Real-Time Disaster Tracking & Assistance</h1>
+            <h1>Get Updated Disaster Tracking & Assistance</h1>
             <p>Stay informed, stay safe. Get live updates and immediate support when disasters strike.</p>
           </div>
           <RequestHelp />
